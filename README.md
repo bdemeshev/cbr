@@ -6,6 +6,11 @@
 install.packages("devtools")
 devtools::install_github("bdemeshev/cbr")
 ```
+Может потребоваться ручная установка пакета `SSOAP`:
+```r
+install.packages('SSOAP', repos = 'http://www.omegahat.org/R',   dependencies = TRUE, type = 'source')
+```
+
 Для новичков в R: Пакеты устанавливаются один раз, и каждый раз для скачанивания рядов выполнять эти команды совершенно ненужно :)
 
 
@@ -25,3 +30,33 @@ df <- cbr_metal(from = '2012-01-01', to = '2013-01-09')
 ```r
 df <- cbr_swap(from = '2012-01-01', to = '2013-01-09')
 ```
+
+
+# cbr
+The R-package `cbr` is designed for downloading data from [cbr.ru](http://cbr.ru/). The package may be installed with two commands:
+```r
+install.packages("devtools")
+devtools::install_github("bdemeshev/cbr")
+```
+Probably one should manually install `SSOAP` R-package:
+```r
+install.packages('SSOAP', repos = 'http://www.omegahat.org/R',   dependencies = TRUE, type = 'source')
+```
+
+Let's downloads exchange rate for burundi frank :)
+```r
+library("cbr")
+df <- cbr_currency(currency = 'R01120', 
+  from = '1993-01-05', to = '2013-01-09')
+```
+
+Metal prices:
+```r
+df <- cbr_metal(from = '2012-01-01', to = '2013-01-09')
+```
+
+Swaps:
+```r
+df <- cbr_swap(from = '2012-01-01', to = '2013-01-09')
+```
+
