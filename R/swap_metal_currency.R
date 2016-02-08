@@ -1,12 +1,8 @@
-#' econru
+#' cbr
 #'
-#' @name econru
+#' @name cbr
 #' @docType package
-#' @author Boris Demeshev
-
-# добавить набор данных с русскими именами и полом resave rewrite.xlsx
-# datamos.ru конвертер кодировок (utf8 -> cp1251 и наоборот, больше не
-# надо :)
+#' @author Marcel Salikhov, Boris Demeshev
 
 
 # todo CBR:
@@ -46,7 +42,7 @@ rus2num <- function(x) {
 #' @examples
 #' excel2date(12345)
 excel2date <- function(x) {
-  ans <- as.Date(as.POSIXct((bir - 25569) * 86400, tz = "GMT", origin = "1970-01-01"))
+  ans <- as.Date(as.POSIXct((x - 25569) * 86400, tz = "GMT", origin = "1970-01-01"))
   return(ans)
 }
 
@@ -62,8 +58,8 @@ excel2date <- function(x) {
 #' @return list with omitted last element
 #' @examples
 #' a <- list(x = 5, y = 'last')
-#' cbr::.droplast(a)
-.droplast <- function(x) {
+#' cbr:::droplast(a)
+droplast <- function(x) {
   n.obs <- length(x)
   if (class(x[[n.obs]]) == "character")
     x <- x[-n.obs]
@@ -83,15 +79,15 @@ excel2date <- function(x) {
 #' @return data.frame with historical currency prices from cbr.ru
 #' @export
 #' @examples
-#' df <- cbrcurrency(currency='R01120',
-#'   from='2012-01-01',to='2013-01-09')
-cbr_currency <- function(currency.name = "", currency.code = 0, currency = "R01120",
+#' df <- cbr_currency(currency = 'R01120',
+#'   from = '1993-01-05', to = '2013-01-09')
+#' # 'R01120' --- Burundi frank :)
+cbr_currency <- function(currency = "R01120",
   from = "1993-01-05", to = "2013-09-18") {
 
-
-
-  # currency <- 'R01120' # Бурундийский франк :) from='1993-01-05'
-  # to='2013-09-18'
+  # currency <- 'R01120'
+  # from <- '1993-01-05'
+  # to <- '2013-09-18'
 
   from <- as.Date(from)
   to <- as.Date(to)
@@ -99,28 +95,33 @@ cbr_currency <- function(currency.name = "", currency.code = 0, currency = "R011
   from.chr <- as.character(from, format = "%d.%m.%Y")
   to.chr <- as.character(to, format = "%d.%m.%Y")
 
-  url <- paste("http://www.cbr.ru/scripts/XML_dynamic.asp?date_req1=",
-    from.chr, "&date_req2=", to.chr, "&VAL_NM_RQ=", currency, sep = "")
+  url <- paste0("http://www.cbr.ru/scripts/XML_dynamic.asp?date_req1=",
+    from.chr, "&date_req2=", to.chr, "&VAL_NM_RQ=", currency)
 
-  url.xml <- getURL(url)
-  cur.list <- xmlToList(url.xml)
+  url.xml <- RCurl::getURL(url)
 
-  # the last element of the list is useless so we drop it, but check
-  # beforehand
-  cur.list <- .droplast(cur.list)
+  if (url.xml == "") {
+    df <- NULL
+    warning("Probably no data for selected period. NULL returned.")
+  } else {
+    cur.list <- XML::xmlToList(url.xml)
 
-  df <- ldply(cur.list, unlist)
+    # the last element of the list is useless so we drop it, but check
+    # beforehand
+    cur.list <- droplast(cur.list)
 
-  # drop `record` and currency name
-  df <- df[c(2, 3, 4)]
+    df <- plyr::ldply(cur.list, unlist)
 
-  names(df) <- c("units", currency, "date")
+    # drop `record` and currency name
+    df <- df[, c(2, 3, 4)]
 
-  # correct type
-  df[, 1] <- rus2num(df[, 1])
-  df[, 2] <- rus2num(df[, 2])
-  df$date <- as.Date(df$date, format = "%d.%m.%Y")
-  
+    names(df) <- c("units", currency, "date")
+
+    # correct type
+    df[, 1] <- rus2num(df[, 1])
+    df[, 2] <- rus2num(df[, 2])
+    df$date <- as.Date(df$date, format = "%d.%m.%Y")
+  }
 
   return(df)
 }
@@ -140,7 +141,7 @@ cbr_currency <- function(currency.name = "", currency.code = 0, currency = "R011
 #' @return data.frame with historical metal prices from cbr.ru
 #' @export
 #' @examples
-#' df <- cbrmetal(from='2012-01-01',to='2013-01-09')
+#' df <- cbr_metal(from = '2012-01-01', to = '2013-01-09')
 cbr_metal <- function(from = "2007-01-01", to = "2013-01-01") {
 
   # from='2007-01-01' to='2013-01-01'
@@ -152,18 +153,18 @@ cbr_metal <- function(from = "2007-01-01", to = "2013-01-01") {
   from.chr <- as.character(from, format = "%d.%m.%Y")
   to.chr <- as.character(to, format = "%d.%m.%Y")
 
-  url <- paste("http://www.cbr.ru/scripts/xml_metall.asp?date_req1=",
-    from.chr, "&date_req2=", to.chr, sep = "")
+  url <- paste0("http://www.cbr.ru/scripts/xml_metall.asp?date_req1=",
+    from.chr, "&date_req2=", to.chr)
 
-  url.xml <- getURL(url)
+  url.xml <- RCurl::getURL(url)
 
-  metal.list <- xmlToList(url.xml)
+  metal.list <- XML::xmlToList(url.xml)
 
   # the last element of the list is useless so we drop it, but check
   # beforehand
-  metal.list <- .droplast(metal.list)
+  metal.list <- droplast(metal.list)
 
-  df <- ldply(metal.list, unlist)
+  df <- plyr::ldply(metal.list, unlist)
 
   df <- df[, -1]  # drop 'record' word
   names(df) <- c("buy", "sell", "date", "code")
@@ -189,7 +190,7 @@ cbr_metal <- function(from = "2007-01-01", to = "2013-01-01") {
 #' @return data.frame with historical swap prices from cbr.ru
 #' @export
 #' @examples
-#' df <- cbrswap(from='2012-01-01',to='2013-01-09')
+#' df <- cbr_swap(from = '2012-01-01', to = '2013-01-09')
 cbr_swap <- function(from = "2007-01-01", to = "2013-01-01") {
 
   # from='2007-01-01' to='2013-01-01'
@@ -201,18 +202,18 @@ cbr_swap <- function(from = "2007-01-01", to = "2013-01-01") {
   from.chr <- as.character(from, format = "%d.%m.%Y")
   to.chr <- as.character(to, format = "%d.%m.%Y")
 
-  url <- paste("http://www.cbr.ru/scripts/xml_swap.asp?date_req1=", from.chr,
-    "&date_req2=", to.chr, sep = "")
+  url <- paste0("http://www.cbr.ru/scripts/xml_swap.asp?date_req1=", from.chr,
+    "&date_req2=", to.chr)
 
-  url.xml <- getURL(url)
+  url.xml <- RCurl::getURL(url)
 
-  swap.list <- xmlToList(url.xml)
+  swap.list <- XML::xmlToList(url.xml)
 
   # the last element of the list is useless so we drop it, but check
   # beforehand
-  swap.list <- .droplast(swap.list)
+  swap.list <- droplast(swap.list)
 
-  df <- ldply(swap.list, unlist)
+  df <- plyr::ldply(swap.list, unlist)
 
   # drop `record`
   df <- df[, -1]
