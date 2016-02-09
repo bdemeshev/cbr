@@ -10,6 +10,15 @@ devtools::install_github("bdemeshev/cbr")
 ```r
 install.packages('SSOAP', repos = 'http://www.omegahat.org/R',   dependencies = TRUE, type = 'source')
 ```
+Если ссылка не работает, попробуйте версию 0.9:
+```r
+install_github("bdemeshev/SSOAP")
+```
+Возможно также потребуется пакет `XMLSchema`:
+```r
+install_github("omegahat/XMLSchema")
+```
+
 
 Для новичков в R: Пакеты устанавливаются один раз, и каждый раз для скачанивания рядов выполнять эти команды совершенно ненужно :)
 
@@ -41,6 +50,14 @@ devtools::install_github("bdemeshev/cbr")
 Probably one should manually install `SSOAP` R-package:
 ```r
 install.packages('SSOAP', repos = 'http://www.omegahat.org/R',   dependencies = TRUE, type = 'source')
+```
+If the link is not working, try
+```r
+install_github("bdemeshev/SSOAP")
+```
+Also install `XMLSchema`:
+```r
+install_github("omegahat/XMLSchema")
 ```
 
 Let's downloads exchange rate for burundi frank :)
