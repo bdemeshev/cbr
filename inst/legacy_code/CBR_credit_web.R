@@ -16,25 +16,25 @@ library(PerformanceAnalytics)
 
 # общая функция для отправки SOAP запросов
 GenericSoap <- function(url, body, name) {
-  h <- basicTextGatherer()  #фунция для обработки http-запросов
+  h <- RCurl::basicTextGatherer()  #фунция для обработки http-запросов
 
   HeaderFields <- c(Accept = "text/xml", Accept = "multipart/*", SOAPAction = paste("\"http://web.cbr.ru/",
     name, "\"", sep = ""), `Content-Type` = "text/xml; charset=utf-8")
-  curlPerform(url = url, httpheader = HeaderFields, postfields = body,
+  RCurl::curlPerform(url = url, httpheader = HeaderFields, postfields = body,
     writefunction = h$update)
   response <- h$value()  #получение ответа от сервера
-  doc <- xmlInternalTreeParse(response)  # создание XML-дерева
+  doc <- XML::xmlInternalTreeParse(response)  # создание XML-дерева
   return(doc)
 }
 
 GenericSoap2 <- function(url, body, name) {
-  h <- basicTextGatherer()  #фунция для обработки http-запросов
+  h <- RCurl::basicTextGatherer()  #фунция для обработки http-запросов
   HeaderFields <- c(Accept = "text/xml", Accept = "multipart/*", SOAPAction = paste("\"http://web.cbr.ru/",
     name, "\"", sep = ""), `Content-Type` = "text/xml; charset=utf-8")
-  curlPerform(url = url, httpheader = HeaderFields, postfields = body,
+  RCurl::curlPerform(url = url, httpheader = HeaderFields, postfields = body,
     writefunction = h$update)
   response <- h$value()  #получение ответа от сервера
-  doc <- getReturnNode(response)  # создание XML-дерева
+  doc <- SSOAP::getReturnNode(response)  # создание XML-дерева
   return(doc)
 }
 
@@ -47,6 +47,7 @@ Data101FullXML <- function(DateFrom, DateTo, CredorgNumber, IndCode) {
     DateTo, "</DateTo>\n                </Data101FullXML>\n                </soap:Body>\n                </soap:Envelope>")
   name <- "Data101FullXML"
   doc <- GenericSoap(url = url, body = body, name = name)
+  return(doc)
 }
 
 
@@ -118,11 +119,12 @@ GetOfficesByRegionXML <- function(RegCode) {
 Data101FormExXML <- function(fromDate, ToDate) {
   doc <- CreditOrgFunction("Data101FormXML", fromDate, ToDate, "450000661",
     "438")
+  return(doc)
 }
 
 # Данные по форме 134 (как XML)
 Data134FormFullXML <- function(CredorgNumber, OnDate) {
-  h <- basicTextGatherer()  #фунция для обработки http-запросов
+  h <- RCurl::basicTextGatherer()  #фунция для обработки http-запросов
   url <- "http://www.cbr.ru/CreditInfoWebServ/CreditOrgInfo.asmx"
   # сформировать тело SOAP запроса
   body <- paste0("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n                <soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n                <soap:Body>\n                <Data134FormFullXML xmlns=\"http://web.cbr.ru/\">\n                <CredorgNumber>",
@@ -140,7 +142,7 @@ Data134FormFullXML("2306", as.Date("2013-01-01"))
 
 # Данные по форме 135 (как XML)
 Data135FormFullXML <- function(CredorgNumber, OnDate) {
-  h <- basicTextGatherer()  #фунция для обработки http-запросов
+  h <- RCurl::basicTextGatherer()  #фунция для обработки http-запросов
   url <- "http://www.cbr.ru/CreditInfoWebServ/CreditOrgInfo.asmx"
   # сформировать тело SOAP запроса
   body <- paste0("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n                <soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n                <soap:Body>\n                <Data135FormFullXML xmlns=\"http://web.cbr.ru/\">\n                <CredorgNumber>",
@@ -161,7 +163,7 @@ BicToRegNumber <- function(bic) {
     bic, "</BicCode>\n                </BicToRegNumber>\n                </soap:Body>\n                </soap:Envelope>")
   name <- "BicToRegNumber"
   doc <- GenericSoap2(url = url, body = body, name = name)
-  doc <- xmlValue(doc)
+  doc <- XML::xmlValue(doc)
   return(doc)
 }
 
@@ -176,7 +178,7 @@ BicToIntCode <- function(bic) {
     bic, "</BicCode>\n                </BicToIntCode>\n                </soap:Body>\n                </soap:Envelope>")
   name <- "BicToIntCode"
   doc <- GenericSoap2(url = url, body = body, name = name)
-  code <- xmlValue(doc)
+  code <- XML::xmlValue(doc)
   return(code)
 }
 
@@ -189,7 +191,7 @@ BicToRegNumber <- function(bic) {
     bic, "</BicCode>\n                </BicToRegNumber>\n                </soap:Body>\n                </soap:Envelope>")
   name <- "BicToRegNumber"
   doc <- GenericSoap2(url = url, body = body, name = name)
-  doc <- xmlValue(doc)
+  doc <- XML::xmlValue(doc)
   return(doc)
 }
 
