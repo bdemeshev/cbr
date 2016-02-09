@@ -40,6 +40,11 @@ df <- cbr_metal(from = '2012-01-01', to = '2013-01-09')
 df <- cbr_swap(from = '2012-01-01', to = '2013-01-09')
 ```
 
+Пакет в самом начале разработки. План:
+
+- [ ] функции Марселя Салихова, работающие через `SSOAP`
+- [ ] табличка с названиями валют и их внутренними кодами
+- [ ] встроенный набор данных для демо целей
 
 # cbr
 The R-package `cbr` is designed for downloading data from [cbr.ru](http://cbr.ru/). The package may be installed with two commands:
