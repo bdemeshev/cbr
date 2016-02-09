@@ -15,7 +15,7 @@ Repo <- RepoSessionXML(start.date, end.date)
 
 miacr <- MKRXML(start.date, end.date)
 miacr <- subset(miacr, miacr$p1 == 3, select = c("CDate", "d1"))  #выделить только MIACR и овернайт
-miacr <- xts(miacr[, -1], order.by = miacr[, 1])
+miacr <- xts::xts(miacr[, -1], order.by = miacr[, 1])
 
 
 mosprime <- MosPrimeXML(start.date, end.date)
@@ -28,9 +28,9 @@ repo.1 <- subset(repo.v, day_repo == 1)
 repo.7 <- subset(repo.v, day_repo == 7)
 
 repo.7 <- repo.7[, c("Dt", "avg_deal", "avg_yield")]
-repo.7 <- as.xts(repo.7[, -1], order.by = repo.7[, 1])
-a <- apply.daily(repo.7[, "avg_yield"], mean)
-b <- apply.daily(repo.7[, "avg_deal"], sum)
+repo.7 <- xts::as.xts(repo.7[, -1], order.by = repo.7[, 1])
+a <- xts::apply.daily(repo.7[, "avg_yield"], mean)
+b <- xts::apply.daily(repo.7[, "avg_deal"], sum)
 repo.7 <- merge(a, b)
 par(mfrow = c(2, 1))
 chart.TimeSeries.IEF(repo.7[, 1])
