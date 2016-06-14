@@ -1,43 +1,47 @@
 
 # Салихов Марсель (quantviews.blogspot.ru)
-library(XML)
-library(RCurl)
-library(SSOAP)
-library(xts)
-library(ggplot2)
-library(dplyr)
-library(scales)
-library(reshape2)
-library(RColorBrewer)
-library(quantmod)
-library(PerformanceAnalytics)
-library(gridExtra)
 
 
-# установка пакета SSOAP, если необходимо install.packages('SSOAP',
-# repos = 'http://www.omegahat.org/R', dependencies = TRUE, type =
-# 'source')
+body_start <- function(name) {
+  body_start_string <- paste0("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n                <soap:Body>\n                <",
+         name, " xmlns=\"http://web.cbr.ru/\">\n")
+  return(body_start_string)
+}
 
+body_end <- function(name) {
+  body_end_string <- paste0("</", name, ">\n </soap:Body>\n </soap:Envelope>")
+  return(body_end_string)
+}
+
+body_block <- function(argument, arg_name) {
+  body_block_string <- paste0("<", arg_name, ">", argument, "</", arg_name, ">\n")
+  return(body_block_string)
+}
+
+soap_request <- function(body, name, url) {
+  h <- RCurl::basicTextGatherer()  #фунция для обработки http-запросов
+  # url <- "http://cbr.ru/secinfo/secinfo.asmx"
+  # сформировать тело SOAP запроса
+  HeaderFields <- c(Accept = "text/xml", Accept = "multipart/*", SOAPAction = paste("\"http://web.cbr.ru/",
+                                                                                    name, "\"", sep = ""), `Content-Type` = "text/xml; charset=utf-8")
+  RCurl::curlPerform(url = url, httpheader = HeaderFields, postfields = body,
+                     writefunction = h$update)
+  response <- h$value()  #получение ответа от сервера
+  doc <- XML::xmlInternalTreeParse(response)  # создание XML-дерева
+  return(doc)
+}
 
 # Генерическая функция обращения к разделу Банка России для получения
 # информации по рынку ценных бумаг
 # http://cbr.ru/scripts/Root.asp?Prtid=SEC
 SecFunction <- function(name, DateFrom, DateTo) {
-  h <- RCurl::basicTextGatherer()  #фунция для обработки http-запросов
   url <- "http://cbr.ru/secinfo/secinfo.asmx"
   # сформировать тело SOAP запроса
-  body <- paste0("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n                <soap:Body>\n                <",
-    name, " xmlns=\"http://web.cbr.ru/\">\n                <DateFrom>",
-    DateFrom, "</DateFrom>\n                <DateTo>", DateTo, "</DateTo>\n                </",
-    name, ">\n                </soap:Body>\n                </soap:Envelope>")
-  HeaderFields <- c(Accept = "text/xml", Accept = "multipart/*", SOAPAction = paste("\"http://web.cbr.ru/",
-    name, "\"", sep = ""), `Content-Type` = "text/xml; charset=utf-8")
-  RCurl::curlPerform(url = url, httpheader = HeaderFields, postfields = body,
-    writefunction = h$update)
-  response <- h$value()  #получение ответа от сервера
-  doc <- XML::xmlInternalTreeParse(response)  # создание XML-дерева
-  return(doc)
-
+  body <- paste0(body_start(name), 
+                   body_block(DateFrom, "DateFrom"), 
+                   body_block(DateTo, "DateTo"),
+                 body_end(name))
+ return(soap_request(body, name, url))
 }
 
 SecFunction2 <- function(name, OnDate, ToDate) {
@@ -93,27 +97,6 @@ SecFunction4 <- function(name, dt) {
 
 }
 
-# Генерическая функция обращения к разделу Банка России 'Веб - сервис
-# для получения ежедневных данных'г
-# http://cbr.ru/scripts/Root.asp?Prtid=DWS
-
-DailyFunction <- function(name, fromDate, ToDate) {
-  h <- RCurl::basicTextGatherer()  #фунция для обработки http-запросов
-  url <- "http://www.cbr.ru/DailyInfoWebServ/DailyInfo.asmx"
-  # сформировать тело SOAP запроса
-  body <- paste0("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n                <soap:Body>\n                <",
-    name, " xmlns=\"http://web.cbr.ru/\">\n                <fromDate>",
-    fromDate, "</fromDate>\n                <ToDate>", ToDate, "</ToDate>\n                </",
-    name, ">\n                </soap:Body>\n                </soap:Envelope>")
-  HeaderFields <- c(Accept = "text/xml", Accept = "multipart/*", SOAPAction = paste("\"http://web.cbr.ru/",
-    name, "\"", sep = ""), `Content-Type` = "text/xml; charset=utf-8")
-  RCurl::curlPerform(url = url, httpheader = HeaderFields, postfields = body,
-    writefunction = h$update)
-  response <- h$value()  #получение ответа от сервера
-  doc <- XML::xmlInternalTreeParse(response)  # создание XML-дерева
-  return(doc)
-
-}
 
 
 # Функция преобразования в результатов генерических функций Daily и Sec
@@ -125,8 +108,8 @@ Doc2Df <- function(doc, headtag) {
   dd <- lapply(cleanup, function(x) {
     # применить преобразования к каждому элементу списка cleanup
     a <- XML::getNodeSet(x, vars)
-    names <- sapply(a, xmlName)  # выделить названия переменных - атрибуты ячеек xml
-    values <- sapply(a, xmlValue)  # выделить значения переменных
+    names <- sapply(a, XML::xmlName)  # выделить названия переменных - атрибуты ячеек xml
+    values <- sapply(a, XML::xmlValue)  # выделить значения переменных
     names(values) <- names
     nots <- vars[!(vars %in% names(values))]  # если какие-то ячейки отсутствуют в данной ноде
     values[nots] <- NA  # то ставим NA
@@ -216,13 +199,13 @@ Sp_fxpm_XML <- function(fromDate, DateTo) {
   df <- Doc2Df(doc, "Data/Corridor")
   df1 <- Doc2Df(doc, "Data/SmoothingInterventions")
   df2 <- Doc2Df(doc, "Data/InternalRangesWidth")
-  df3 <- as.data.frame(sapply(getNodeSet(doc, paste0("//", "D0")), xmlValue))
+  df3 <- as.data.frame(sapply(getNodeSet(doc, paste0("//", "D0")), XML::xmlValue))
   names(df3) <- "D0"
   df4 <- as.data.frame(sapply(getNodeSet(doc, paste0("//", "CumulativeVolume")),
-    xmlValue))
+    XML::xmlValue))
   names(df4) <- "CumulativeVolume"
   df5 <- as.data.frame(sapply(getNodeSet(doc, paste0("//", "TreasuryOrderVolulme")),
-    xmlValue))
+    XML::xmlValue))
   names(df5) <- "TreasuryOrderVolulme"
   df <- cbind(df, df1, df2, df3, df4, df5)
 
@@ -367,7 +350,7 @@ AuctionsXML <- function(DateFrom, DateTo) {
     for (i in 1:length(vars)) {
       cur <- vars[i]
       cc <- XML::getNodeSet(a, cur)  #получить список значений XML ячейки
-      drow <- (sapply(cc, xmlValue))  # преобразовать список в вектор
+      drow <- (sapply(cc, XML::xmlValue))  # преобразовать список в вектор
       if (length(drow) > 0)
         df[j, i] <- drow else df[j, i] <- NA  #если нет каких-то значений, то поставить NA
     }
@@ -415,7 +398,7 @@ CouponsXML <- function(DateFrom, DateTo) {
     for (i in 1:length(vars)) {
       cur <- vars[i]
       cc <- XML::getNodeSet(a, cur)  #получить список значений XML ячейки
-      drow <- (sapply(cc, xmlValue))  # преобразовать список в вектор
+      drow <- (sapply(cc, XML::xmlValue))  # преобразовать список в вектор
       if (length(drow) > 0)
         df[j, i] <- drow else df[j, i] <- NA  #если нет каких-то значений, то поставить NA
     }
@@ -454,7 +437,7 @@ GKOOFZ_AnalitXML <- function(DateFrom, DateTo) {
   for (i in 1:length(vars)) {
     cur <- vars[i]
     cc <- XML::getNodeSet(doc, paste("//", cur, sep = ""))  #получить список значений XML ячейки
-    df[, i] <- sapply(cc, xmlValue)  # преобразовать список в вектор
+    df[, i] <- sapply(cc, XML::xmlValue)  # преобразовать список в вектор
   }
   df[, "RP_DATE"] <- as.Date(as.POSIXct(df[, "RP_DATE"]))
   return(df)
@@ -535,7 +518,7 @@ GetCursDynamicXML <- function(FromDate, ToDate, ValutaCode) {
 # as.data.frame(matrix(nrow =length(cleanup), ncol = length(vars),
 # dimnames = list(NULL, vars))) for (i in 1:length(vars)){ cur <-
 # vars[i] cc <- XML::getNodeSet(doc, paste('//',cur, sep ='')) df[,i] <-
-# sapply(cc, xmlValue) } df[, 'day']<- as.Date(as.POSIXct(df[,
+# sapply(cc, XML::xmlValue) } df[, 'day']<- as.Date(as.POSIXct(df[,
 # 'day']))+1 df[, 'val']<- as.numeric(df[, 'val']) return(df) }
 
 MainInfoXML <- function() {
@@ -768,21 +751,13 @@ SecFunction3 <- function(name, dt) {
 # http://cbr.ru/scripts/Root.asp?Prtid=DWS
 
 DailyFunction <- function(name, fromDate, ToDate) {
-  h <- RCurl::basicTextGatherer()  #фунция для обработки http-запросов
   url <- "http://www.cbr.ru/DailyInfoWebServ/DailyInfo.asmx"
   # сформировать тело SOAP запроса
-  body <- paste0("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n                <soap:Body>\n                <",
-                 name, " xmlns=\"http://web.cbr.ru/\">\n                <fromDate>",
-                 fromDate, "</fromDate>\n                <ToDate>", ToDate,
-                 "</ToDate>\n                </", name, ">\n                </soap:Body>\n                </soap:Envelope>")
-  HeaderFields <- c(Accept = "text/xml", Accept = "multipart/*",
-                    SOAPAction = paste("\"http://web.cbr.ru/", name, "\"", sep = ""),
-                    `Content-Type` = "text/xml; charset=utf-8")
-  RCurl::curlPerform(url = url, httpheader = HeaderFields, postfields = body,
-              writefunction = h$update)
-  response <- h$value()  #получение ответа от сервера
-  doc <- XML::xmlInternalTreeParse(response)  # создание XML-дерева
-  return(doc)
+  body <- paste0(body_start(name), 
+                   body_block(fromDate, "fromDate"), 
+                   body_block(ToDate, "ToDate"),
+                 body_end(name))
+  return(soap_request(body, name, url))
 }
 
 
@@ -796,8 +771,8 @@ Doc2Df <- function(doc, headtag) {
   dd <- lapply(cleanup, function(x) {
     # применить преобразования к каждому элементу списка cleanup
     a <- XML::getNodeSet(x, vars)
-    names <- sapply(a, xmlName)  # выделить названия переменных - атрибуты ячеек xml
-    values <- sapply(a, xmlValue)  # выделить значения переменных
+    names <- sapply(a, XML::xmlName)  # выделить названия переменных - атрибуты ячеек xml
+    values <- sapply(a, XML::xmlValue)  # выделить значения переменных
     names(values) <- names
     nots <- vars[!(vars %in% names(values))]  # если какие-то ячейки отсутствуют в данной ноде
     values[nots] <- NA  # то ставим NA
@@ -822,13 +797,13 @@ Sp_fxpm_XML <- function(fromDate, DateTo) {
   df1 <- Doc2Df(doc, "Data/SmoothingInterventions")
   df2 <- Doc2Df(doc, "Data/InternalRangesWidth")
   df3 <- as.data.frame(sapply(getNodeSet(doc, paste0("//", "D0")),
-                              xmlValue))
+                              XML::xmlValue))
   names(df3) <- "D0"
   df4 <- as.data.frame(sapply(getNodeSet(doc, paste0("//", "CumulativeVolume")),
-                              xmlValue))
+                              XML::xmlValue))
   names(df4) <- "CumulativeVolume"
   df5 <- as.data.frame(sapply(getNodeSet(doc, paste0("//", "TreasuryOrderVolulme")),
-                              xmlValue))
+                              XML::xmlValue))
   names(df5) <- "TreasuryOrderVolulme"
   df <- cbind(df, df1, df2, df3, df4, df5)
 
@@ -977,7 +952,7 @@ AuctionsXML <- function(DateFrom, DateTo) {
     for (i in 1:length(vars)) {
       cur <- vars[i]
       cc <- XML::getNodeSet(a, cur)  #получить список значений XML ячейки
-      drow <- (sapply(cc, xmlValue))  # преобразовать список в вектор
+      drow <- (sapply(cc, XML::xmlValue))  # преобразовать список в вектор
       if (length(drow) > 0)
         df[j, i] <- drow else df[j, i] <- NA  #если нет каких-то значений, то поставить NA
     }
@@ -1023,7 +998,7 @@ CouponsXML <- function(DateFrom, DateTo) {
     for (i in 1:length(vars)) {
       cur <- vars[i]
       cc <- XML::getNodeSet(a, cur)  #получить список значений XML ячейки
-      drow <- (sapply(cc, xmlValue))  # преобразовать список в вектор
+      drow <- (sapply(cc, XML::xmlValue))  # преобразовать список в вектор
       if (length(drow) > 0)
         df[j, i] <- drow else df[j, i] <- NA  #если нет каких-то значений, то поставить NA
     }
@@ -1062,7 +1037,7 @@ GKOOFZ_AnalitXML <- function(DateFrom, DateTo) {
   for (i in 1:length(vars)) {
     cur <- vars[i]
     cc <- XML::getNodeSet(doc, paste("//", cur, sep = ""))  #получить список значений XML ячейки
-    df[, i] <- sapply(cc, xmlValue)  # преобразовать список в вектор
+    df[, i] <- sapply(cc, XML::xmlValue)  # преобразовать список в вектор
   }
   df[, "RP_DATE"] <- as.Date(as.POSIXct(df[, "RP_DATE"]))
   return(df)
@@ -1141,7 +1116,7 @@ Isoterm <- function(OnDate, ToDate, ValutaCode, I_Day) {
   for (i in 1:length(vars)) {
     cur <- vars[i]
     cc <- XML::getNodeSet(doc, paste("//", cur, sep = ""))
-    df[, i] <- sapply(cc, xmlValue)
+    df[, i] <- sapply(cc, XML::xmlValue)
   }
   df[, "day"] <- as.Date(as.POSIXct(df[, "day"])) + 1
   df[, "val"] <- as.numeric(df[, "val"])

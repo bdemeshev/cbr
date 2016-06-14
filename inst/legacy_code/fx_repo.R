@@ -1,5 +1,17 @@
 library(dygraphs)
+library(XML)
+library(RCurl)
+library(SSOAP)
+library(xts)
+library(ggplot2)
+library(dplyr)
+library(scales)
+library(reshape2)
+library(RColorBrewer)
+library(quantmod)
 library(PerformanceAnalytics)
+library(gridExtra)
+
 # расчет общей задолженности по валютному репо
 
 DateFrom <- as.Date("2014-10-01")

@@ -1,3 +1,16 @@
+library(dygraphs)
+library(XML)
+library(RCurl)
+library(SSOAP)
+library(xts)
+library(ggplot2)
+library(dplyr)
+library(scales)
+library(reshape2)
+library(RColorBrewer)
+library(quantmod)
+library(PerformanceAnalytics)
+library(gridExtra)
 
 
 Sys.getlocale()  # LC_COLLATE=Russian_Russia.1251
@@ -45,7 +58,7 @@ repo.1 <- merge(a, b)
 par(mfrow = c(1, 1))
 chart.TimeSeries.IEF(repo.1[, 1])
 chart.TimeSeries.IEF(repo.1[, 2]/1000)
-repo.volume <<- na.locf(merge(repo.1[, 2], repo.7[, 2]))
+repo.volume <- na.locf(merge(repo.1[, 2], repo.7[, 2]))
 names(repo.volume) <- c("1 day", "7days")
 repo.volume <- na.omit(repo.volume)
 chart.StackedBar(repo.volume/1000, las = 1, colorset = ief.palette, border = NA,
@@ -54,7 +67,7 @@ openGraph(width = 7, height = 4)
 saveGraph(file = "graph/repo-auction-volumes.emf", type = "emf")
 
 
-repo.yield <<- na.locf(merge(repo.1[, 1], repo.7[, 1]))
+repo.yield <- na.locf(merge(repo.1[, 1], repo.7[, 1]))
 names(repo.yield) <- c("1 day", "7days")
 repo.yield <- na.omit(repo.yield)
 chart.TimeSeries.IEF(repo.yield, legend.loc = "top")

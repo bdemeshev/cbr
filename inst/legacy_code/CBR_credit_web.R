@@ -2,17 +2,7 @@
 # организациям http://www.cbr.ru/scripts/Root.asp?Prtid=WSCO Автор:
 # Салихов Марсель (quantviews.blogspot.ru)
 
-library(XML)
-library(RCurl)
-library(SSOAP)
-library(xts)
-library(ggplot2)
-library(gridExtra)
-library(scales)
-library(reshape2)
-library(RColorBrewer)
-library(quantmod)
-library(PerformanceAnalytics)
+
 
 # общая функция для отправки SOAP запросов
 GenericSoap <- function(url, body, name) {

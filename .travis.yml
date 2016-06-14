@@ -4,6 +4,10 @@ language: r
 warnings_are_errors: true
 sudo: required
 
+r_github_packages:
+  - omegahat/XMLSchema
+  - bdemeshev/SSOAP
+
 env:
  global:
    - CRAN: http://cran.rstudio.com
@@ -12,7 +16,3 @@ notifications:
   email:
     on_success: change
     on_failure: change
-
-r_github_packages:
-  - omegahat/XMLSchema
-  - bdemeshev/SSOAP
