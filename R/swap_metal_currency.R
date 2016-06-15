@@ -29,6 +29,60 @@ rus2num <- function(x) {
 }
 
 
+
+#' Convert character in Date format needed to create url
+#'
+#' Convert character in Date format needed to create url
+#'
+#' Convert character in Date format needed to create url
+#'
+#' @param chr the date in character format
+#' @return Date the date converted from the character
+#' @export
+#' @examples
+#' chr2date('2016-06-14')
+chr2date <- function(chr) {
+  chr <- as.Date(chr)
+  chr.chr <- as.character(chr, format = "%d.%m.%Y")
+}
+
+
+
+#' Convert list from xml to data.frame with little changes
+#'
+#' Convert list from xml to data.frame with little changes
+#'
+#' Convert list from xml to data.frame with little changes
+#'
+#' @param url the url of xml list of data
+#' @return data.frame
+#' @export
+#' @examples
+#' extractXML('http://www.cbr.ru/scripts/xml_swap.asp?date_req1=01/12/2002&date_req2=06/12/2002')
+extractXML <- function(url) {
+  url.xml <- RCurl::getURL(url)
+
+  if (url.xml == "") {
+    df <- NULL
+    warning("Probably no data for selected date. NULL returned.")
+  } else {
+    cur.list <- XML::xmlToList(url.xml)
+
+    # the last element of the list is useless so we drop it, but check
+    # beforehand
+    cur.list <- droplast(cur.list)
+
+    df <- plyr::ldply(cur.list, unlist)
+    df <- df[, -1]
+    names(df) <- tolower(names(df))
+
+  }
+
+  return(df)
+}
+
+
+
 #' Convert excel numeric date encoding to date
 #'
 #' Convert excel numeric date encoding to date
@@ -67,6 +121,37 @@ droplast <- function(x) {
 }
 
 
+
+#' Actual currency prices from Central Bank of Russia on date.
+#'
+#' Actual currency prices from Central Bank of Russia on date.
+#'
+#' Actual currency prices from Central Bank of Russia on date.
+#'
+#' @param ondate the date of actual currency prices, character or Date
+#' @return data.frame with actual currency prices on date from cbr.ru
+#' @export
+#' @examples
+#' df <- cbr_cur_ondate(ondate = '2016-06-14')
+cbr_cur_ondate <- function(ondate = "2016-06-14") {
+
+
+  url <- paste0("http://www.cbr.ru/scripts/XML_daily_eng.asp?date_req=", chr2date(ondate))
+
+  df <- extractXML(url)
+
+  if (is.null(df)) {
+    stop
+  } else {
+    colnames(df)[colnames(df) == ".attrs.id"] <- "id"
+    df$value <- rus2num(df$value)
+  }
+
+  return(df)
+}
+
+
+
 #' Historical currency prices from Central Bank of Russia.
 #'
 #' Historical currency prices from Central Bank of Russia.
@@ -83,42 +168,20 @@ droplast <- function(x) {
 #'   from = '1993-01-05', to = '2013-01-09')
 #' # 'R01120' --- Burundi frank :)
 cbr_currency <- function(currency = "R01120",
-  from = "1993-01-05", to = "2013-09-18") {
-
-  # currency <- 'R01120'
-  # from <- '1993-01-05'
-  # to <- '2013-09-18'
-
-  from <- as.Date(from)
-  to <- as.Date(to)
-
-  from.chr <- as.character(from, format = "%d.%m.%Y")
-  to.chr <- as.character(to, format = "%d.%m.%Y")
+                         from = "1993-01-05", to = "2013-09-18") {
 
   url <- paste0("http://www.cbr.ru/scripts/XML_dynamic.asp?date_req1=",
-    from.chr, "&date_req2=", to.chr, "&VAL_NM_RQ=", currency)
+                chr2date(from), "&date_req2=", chr2date(to), "&VAL_NM_RQ=", currency)
 
-  url.xml <- RCurl::getURL(url)
+  df <- extractXML(url)
 
-  if (url.xml == "") {
-    df <- NULL
-    warning("Probably no data for selected period. NULL returned.")
+  if (is.null(df)) {
+    stop
   } else {
-    cur.list <- XML::xmlToList(url.xml)
-
-    # the last element of the list is useless so we drop it, but check
-    # beforehand
-    cur.list <- droplast(cur.list)
-
-    df <- plyr::ldply(cur.list, unlist)
-
-    # drop `record` and currency name
-    df <- df[, c(2, 3, 4)]
-
     names(df) <- c("units", currency, "date")
 
     # correct type
-    df[, 1] <- rus2num(df[, 1])
+    df$units <- rus2num(df$units)
     df[, 2] <- rus2num(df[, 2])
     df$date <- as.Date(df$date, format = "%d.%m.%Y")
   }
@@ -127,6 +190,39 @@ cbr_currency <- function(currency = "R01120",
 }
 
 
+
+#' Credit institutions balances on correspondent accounts with Bank of Russia.
+#'
+#' Credit institutions balances on correspondent accounts with Bank of Russia.
+#'
+#' Credit institutions balances on correspondent accounts with Bank of Russia.
+#'
+#' @param from the first day of the time interval, character or Date
+#' @param to the last day of the time interval, character or Date
+#' @return data.frame with credit institutions balance from cbr.ru
+#' @export
+#' @examples
+#' df <- cbr_balances(from = '2012-01-01', to = '2013-01-09')
+cbr_balances <- function(from = "2007-01-01", to = "2013-01-01") {
+
+  # from='2007-01-01' to='2013-01-01'
+
+  url <- paste0("http://www.cbr.ru/scripts/XML_ostat.asp?date_req1=",
+                chr2date(from), "&date_req2=", chr2date(to))
+
+  df <- extractXML(url)
+
+  if (is.null(df)) {
+    stop
+  } else {
+    # correct type
+    names(df) <- c("russia", "moscow", "date")
+    df$date <- as.Date(df$date, format = "%d.%m.%Y")
+
+  }
+
+  return(df)
+}
 
 
 
@@ -146,33 +242,59 @@ cbr_metal <- function(from = "2007-01-01", to = "2013-01-01") {
 
   # from='2007-01-01' to='2013-01-01'
 
-  # this two lines allow both Date and string format for `from` and `to`
-  from <- as.Date(from)
-  to <- as.Date(to)
-
-  from.chr <- as.character(from, format = "%d.%m.%Y")
-  to.chr <- as.character(to, format = "%d.%m.%Y")
-
   url <- paste0("http://www.cbr.ru/scripts/xml_metall.asp?date_req1=",
-    from.chr, "&date_req2=", to.chr)
+                chr2date(from), "&date_req2=", chr2date(to))
 
-  url.xml <- RCurl::getURL(url)
+  df <- extractXML(url)
 
-  metal.list <- XML::xmlToList(url.xml)
+  if (is.null(df)) {
+    stop
+  } else {
+    # correct type
+    names(df) <- c("buy", "sell", "date", "code")
 
-  # the last element of the list is useless so we drop it, but check
-  # beforehand
-  metal.list <- droplast(metal.list)
+    df$date <- as.Date(df$date, format = "%d.%m.%Y")
+    df$code <- as.factor(df$code)
+    df$buy <- rus2num(df$buy)
+    df$sell <- rus2num(df$sell)
+  }
 
-  df <- plyr::ldply(metal.list, unlist)
+  return(df)
+}
 
-  df <- df[, -1]  # drop 'record' word
-  names(df) <- c("buy", "sell", "date", "code")
 
-  df$date <- as.Date(df$date, format = "%d.%m.%Y")
-  df$code <- as.factor(df$code)
-  df$buy <- rus2num(df$buy)
-  df$sell <- rus2num(df$sell)
+
+#' Historical credit rates on Interbank Credit Market.
+#'
+#' Historical credit rates on Interbank Credit Market.
+#'
+#' Historical credit rates on Interbank Credit Market.
+#'
+#' @param from the first day of the time interval, character or Date
+#' @param to the last day of the time interval, character or Date
+#' @return data.frame with historical credit rates from cbr.ru
+#' @export
+#' @examples
+#' df <- cbr_credit_rates(from = '2012-01-01', to = '2013-01-09')
+cbr_credit_rates <- function(from = "2007-01-01", to = "2013-01-01") {
+
+  # from='2007-01-01' to='2013-01-01'
+
+  url <- paste0("http://www.cbr.ru/scripts/xml_mkr.asp?date_req1=",
+                chr2date(from), "&date_req2=", chr2date(to))
+
+  df <- extractXML(url)
+
+  if (is.null(df)) {
+    stop
+  } else {
+    # correct type
+    names(df) <- c("daily", "weekly", "monthly", "3months", "halfyear", "yearly", "date", "code")
+
+    df$date <- as.Date(paste0(substring(df$date, first = 1, last = 2),
+                              ".", substring(df$date, first = 4, last = 5),
+                              ".", substring(df$date, first = 7, last = 10)), format = "%d.%m.%Y")
+  }
 
   return(df)
 }
@@ -195,41 +317,66 @@ cbr_swap <- function(from = "2007-01-01", to = "2013-01-01") {
 
   # from='2007-01-01' to='2013-01-01'
 
-  # this two lines allow both Date and string format for `from` and `to`
-  from <- as.Date(from)
-  to <- as.Date(to)
+  url <- paste0("http://www.cbr.ru/scripts/xml_swap.asp?date_req1=",
+                chr2date(from), "&date_req2=", chr2date(to))
 
-  from.chr <- as.character(from, format = "%d.%m.%Y")
-  to.chr <- as.character(to, format = "%d.%m.%Y")
+  df <- extractXML(url)
 
-  url <- paste0("http://www.cbr.ru/scripts/xml_swap.asp?date_req1=", from.chr,
-    "&date_req2=", to.chr)
+  if (is.null(df)) {
+    stop
+  } else {
+    # correct type
+    names(df) <- c("datebuy", "datesell", "baserate", "sd", "tir", "ir",
+                   "euro")
 
-  url.xml <- RCurl::getURL(url)
+    # types
+    df$baserate <- rus2num(df$baserate)
+    df$ir <- rus2num(df$ir)
+    df$tir <- rus2num(df$tir)
+    df$sd <- rus2num(df$sd)
 
-  swap.list <- XML::xmlToList(url.xml)
+    df$euro <- factor(df$euro)
+    df$datebuy <- as.Date(df$datebuy, format = "%d.%m.%Y")
+    df$datesell <- as.Date(df$datesell, format = "%d.%m.%Y")
+  }
 
-  # the last element of the list is useless so we drop it, but check
-  # beforehand
-  swap.list <- droplast(swap.list)
+  return(df)
+}
 
-  df <- plyr::ldply(swap.list, unlist)
 
-  # drop `record`
-  df <- df[, -1]
 
-  names(df) <- c("datebuy", "datesell", "baserate", "sd", "tir", "ir",
-    "euro")
+#' Release Prices of the Bank of Russia for Investment Coins.
+#'
+#' Release Prices of the Bank of Russia for Investment Coins.
+#'
+#' Release Prices of the Bank of Russia for Investment Coins.
+#'
+#' @param from the first day of the time interval, character or Date
+#' @param to the last day of the time interval, character or Date
+#' @return data.frame with historical release prices for investment coins from cbr.ru
+#' @export
+#' @examples
+#' df <- cbr_coins(from = '2012-01-01', to = '2013-01-09')
+cbr_coins <- function(from = "2007-01-01", to = "2013-01-01") {
 
-  # types
-  df$baserate <- rus2num(df$baserate)
-  df$ir <- rus2num(df$ir)
-  df$tir <- rus2num(df$tir)
-  df$sd <- rus2num(df$sd)
+  url <- paste0("http://www.cbr.ru/scripts/XMLCoinsBase.asp?date_req1=",
+                chr2date(from), "&date_req2=", chr2date(to))
 
-  df$euro <- factor(df$euro)
-  df$datebuy <- as.Date(df$datebuy, format = "%d.%m.%Y")
-  df$datesell <- as.Date(df$datesell, format = "%d.%m.%Y")
+  df <- extractXML(url)
+
+  if (is.null(df)) {
+    stop
+  } else {
+    # correct type
+    names(df) <- c("date", "price", "nominal", "metaltype", "metalquantity", "coinid")
+
+    df$date <- as.Date(paste0(substring(df$date, first = 1, last = 2),
+                              ".", substring(df$date, first = 4, last = 5),
+                              ".", substring(df$date, first = 7, last = 10)), format = "%d.%m.%Y")
+
+    df$price <- rus2num(df$price)
+    df$metalquantity <- rus2num(df$metalquantity)
+  }
 
   return(df)
 }
