@@ -4,10 +4,8 @@
 #' @docType package
 #' @author Marcel Salikhov, Boris Demeshev
 
-
-# todo CBR:
-
-# cur day coins deposit interbank
+data("cbr_requests", envir = environment())
+data("cbr_requests_unsupported", envir = environment())
 
 
 #' Convert string with a number in Russian tradition in numeric
@@ -55,29 +53,29 @@ chr2date <- function(chr) {
 #' Convert list from xml to data.frame with little changes
 #'
 #' @param url the url of xml list of data
-#' @return data.frame
+#' @return data.frame 
 #' @export
 #' @examples
 #' extractXML('http://www.cbr.ru/scripts/xml_swap.asp?date_req1=01/12/2002&date_req2=06/12/2002')
 extractXML <- function(url) {
   url.xml <- RCurl::getURL(url)
-
+  
   if (url.xml == "") {
     df <- NULL
     warning("Probably no data for selected date. NULL returned.")
   } else {
     cur.list <- XML::xmlToList(url.xml)
-
+    
     # the last element of the list is useless so we drop it, but check
     # beforehand
     cur.list <- droplast(cur.list)
-
+    
     df <- plyr::ldply(cur.list, unlist)
     df <- df[, -1]
     names(df) <- tolower(names(df))
-
+    
   }
-
+  
   return(df)
 }
 
@@ -134,19 +132,20 @@ droplast <- function(x) {
 #' @examples
 #' df <- cbr_cur_ondate(ondate = '2016-06-14')
 cbr_cur_ondate <- function(ondate = "2016-06-14") {
-
-
+  
+  # onDate = '2016-06-14'
+  
   url <- paste0("http://www.cbr.ru/scripts/XML_daily_eng.asp?date_req=", chr2date(ondate))
-
+  
   df <- extractXML(url)
-
+  
   if (is.null(df)) {
-    stop
+    message("No data on that date.")
   } else {
     colnames(df)[colnames(df) == ".attrs.id"] <- "id"
     df$value <- rus2num(df$value)
   }
-
+  
   return(df)
 }
 
@@ -169,23 +168,27 @@ cbr_cur_ondate <- function(ondate = "2016-06-14") {
 #' # 'R01120' --- Burundi frank :)
 cbr_currency <- function(currency = "R01120",
                          from = "1993-01-05", to = "2013-09-18") {
-
+  
+  # currency <- 'R01120'
+  # from <- '1993-01-05'
+  # to <- '2013-09-18'
+  
   url <- paste0("http://www.cbr.ru/scripts/XML_dynamic.asp?date_req1=",
                 chr2date(from), "&date_req2=", chr2date(to), "&VAL_NM_RQ=", currency)
-
+  
   df <- extractXML(url)
-
+  
   if (is.null(df)) {
-    stop
+    message("No data on that date.")
   } else {
     names(df) <- c("units", currency, "date")
-
+    
     # correct type
     df$units <- rus2num(df$units)
     df[, 2] <- rus2num(df[, 2])
     df$date <- as.Date(df$date, format = "%d.%m.%Y")
   }
-
+  
   return(df)
 }
 
@@ -204,23 +207,23 @@ cbr_currency <- function(currency = "R01120",
 #' @examples
 #' df <- cbr_balances(from = '2012-01-01', to = '2013-01-09')
 cbr_balances <- function(from = "2007-01-01", to = "2013-01-01") {
-
+  
   # from='2007-01-01' to='2013-01-01'
-
+  
   url <- paste0("http://www.cbr.ru/scripts/XML_ostat.asp?date_req1=",
                 chr2date(from), "&date_req2=", chr2date(to))
-
+  
   df <- extractXML(url)
-
+  
   if (is.null(df)) {
-    stop
+    message("No data on that date.")
   } else {
     # correct type
     names(df) <- c("russia", "moscow", "date")
     df$date <- as.Date(df$date, format = "%d.%m.%Y")
-
+    
   }
-
+  
   return(df)
 }
 
@@ -239,26 +242,26 @@ cbr_balances <- function(from = "2007-01-01", to = "2013-01-01") {
 #' @examples
 #' df <- cbr_metal(from = '2012-01-01', to = '2013-01-09')
 cbr_metal <- function(from = "2007-01-01", to = "2013-01-01") {
-
+  
   # from='2007-01-01' to='2013-01-01'
-
+  
   url <- paste0("http://www.cbr.ru/scripts/xml_metall.asp?date_req1=",
                 chr2date(from), "&date_req2=", chr2date(to))
-
+  
   df <- extractXML(url)
-
+  
   if (is.null(df)) {
-    stop
+    message("No data on that date.")
   } else {
     # correct type
     names(df) <- c("buy", "sell", "date", "code")
-
+    
     df$date <- as.Date(df$date, format = "%d.%m.%Y")
     df$code <- as.factor(df$code)
     df$buy <- rus2num(df$buy)
     df$sell <- rus2num(df$sell)
   }
-
+  
   return(df)
 }
 
@@ -277,25 +280,25 @@ cbr_metal <- function(from = "2007-01-01", to = "2013-01-01") {
 #' @examples
 #' df <- cbr_credit_rates(from = '2012-01-01', to = '2013-01-09')
 cbr_credit_rates <- function(from = "2007-01-01", to = "2013-01-01") {
-
+  
   # from='2007-01-01' to='2013-01-01'
-
+  
   url <- paste0("http://www.cbr.ru/scripts/xml_mkr.asp?date_req1=",
                 chr2date(from), "&date_req2=", chr2date(to))
-
+  
   df <- extractXML(url)
-
+  
   if (is.null(df)) {
-    stop
+    message("No data on that date.")
   } else {
     # correct type
     names(df) <- c("daily", "weekly", "monthly", "3months", "halfyear", "yearly", "date", "code")
-
-    df$date <- as.Date(paste0(substring(df$date, first = 1, last = 2),
-                              ".", substring(df$date, first = 4, last = 5),
+    
+    df$date <- as.Date(paste0(substring(df$date, first = 1, last = 2), 
+                              ".", substring(df$date, first = 4, last = 5), 
                               ".", substring(df$date, first = 7, last = 10)), format = "%d.%m.%Y")
   }
-
+  
   return(df)
 }
 
@@ -314,32 +317,32 @@ cbr_credit_rates <- function(from = "2007-01-01", to = "2013-01-01") {
 #' @examples
 #' df <- cbr_swap(from = '2012-01-01', to = '2013-01-09')
 cbr_swap <- function(from = "2007-01-01", to = "2013-01-01") {
-
+  
   # from='2007-01-01' to='2013-01-01'
-
-  url <- paste0("http://www.cbr.ru/scripts/xml_swap.asp?date_req1=",
+  
+  url <- paste0("http://www.cbr.ru/scripts/xml_swap.asp?date_req1=", 
                 chr2date(from), "&date_req2=", chr2date(to))
-
+  
   df <- extractXML(url)
-
+  
   if (is.null(df)) {
-    stop
+    message("No data on that date.")
   } else {
     # correct type
     names(df) <- c("datebuy", "datesell", "baserate", "sd", "tir", "ir",
                    "euro")
-
+    
     # types
     df$baserate <- rus2num(df$baserate)
     df$ir <- rus2num(df$ir)
     df$tir <- rus2num(df$tir)
     df$sd <- rus2num(df$sd)
-
+    
     df$euro <- factor(df$euro)
     df$datebuy <- as.Date(df$datebuy, format = "%d.%m.%Y")
     df$datesell <- as.Date(df$datesell, format = "%d.%m.%Y")
   }
-
+  
   return(df)
 }
 
@@ -358,25 +361,164 @@ cbr_swap <- function(from = "2007-01-01", to = "2013-01-01") {
 #' @examples
 #' df <- cbr_coins(from = '2012-01-01', to = '2013-01-09')
 cbr_coins <- function(from = "2007-01-01", to = "2013-01-01") {
-
+  
+  # from='2007-01-01' to='2013-01-01'
+  
   url <- paste0("http://www.cbr.ru/scripts/XMLCoinsBase.asp?date_req1=",
                 chr2date(from), "&date_req2=", chr2date(to))
-
+  
   df <- extractXML(url)
-
+  
   if (is.null(df)) {
-    stop
+    df <- NULL
+    message("No data on that date.")
   } else {
     # correct type
     names(df) <- c("date", "price", "nominal", "metaltype", "metalquantity", "coinid")
-
-    df$date <- as.Date(paste0(substring(df$date, first = 1, last = 2),
-                              ".", substring(df$date, first = 4, last = 5),
+    
+    df$date <- as.Date(paste0(substring(df$date, first = 1, last = 2), 
+                              ".", substring(df$date, first = 4, last = 5), 
                               ".", substring(df$date, first = 7, last = 10)), format = "%d.%m.%Y")
-
+    
     df$price <- rus2num(df$price)
     df$metalquantity <- rus2num(df$metalquantity)
   }
-
+  
   return(df)
 }
+
+
+
+#' Create body of html-request
+#'
+#' Create body of html-request
+#'
+#' Create body of html-request
+#'
+#' @param body the body of html-request
+#' @param name the name of variable from http://www.cbr.ru/secinfo/secinfo.asmx
+#' @export
+#' @return XML-tree
+#' @examples
+#' body <- paste0(
+#' "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n
+#' <soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" 
+#'   xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" 
+#'   xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n
+#'     <soap:Body>\n                
+#'       <AuctionsXML xmlns=\"http://web.cbr.ru/\">\n
+#'         <DateFrom>2015-01-01</DateFrom>\n
+#'         <DateTo>2015-06-01</DateTo>\n                
+#'       </AuctionsXML>\n
+#'     </soap:Body>\n                
+#' </soap:Envelope>")
+#' cbr_get_body(body, "AuctionsXML")
+cbr_get_body <- function(body, name) {
+  h <- RCurl::basicTextGatherer()
+  url <- "http://cbr.ru/secinfo/secinfo.asmx"
+  
+  HeaderFields <- c(Accept = "text/xml", Accept = "multipart/*", SOAPAction = paste("\"http://web.cbr.ru/",
+                                                                                    name, "\"", sep = ""), `Content-Type` = "text/xml; charset=utf-8")
+  RCurl::curlPerform(url = url, httpheader = HeaderFields, postfields = body,
+                     writefunction = h$update)
+  response <- h$value()
+  doc <- XML::xmlInternalTreeParse(response)
+  return(doc)
+}
+
+
+
+#' Convert list from xml to data.frame without changes
+#'
+#' Convert list from xml to data.frame without changes
+#'
+#' Convert list from xml to data.frame without changes
+#'
+#' @param name the name of variable from http://www.cbr.ru/secinfo/secinfo.asmx
+#' @param firstDate start of period, Date, as.Date("2000-01-01") by default
+#' @param secondDate end of period, Date, Sys.Date() by default
+#' @export
+#' @return data.frame
+#' @examples
+#' df <- cbr_security_info("AuctionsXML")
+cbr_security_info <- function(name, 
+                              firstDate = as.Date("2000-01-01"), 
+                              secondDate = Sys.Date()) {
+  
+  type <- cbr_requests[cbr_requests$name == name, "type"]
+  
+  if (length(type) == 0) {
+    stop("The name ", name, " is not supported by Central Bank or by this function.") 
+  }
+  
+  if (type == "DateFromTo") {
+    
+    # сформировать тело SOAP запроса
+    body <- paste0(
+      "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n
+      <soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n
+      <soap:Body>\n                
+      <", name, " xmlns=\"http://web.cbr.ru/\">\n
+      <DateFrom>", firstDate, "</DateFrom>\n
+      <DateTo>", secondDate, "</DateTo>\n                
+      </", name, ">\n
+      </soap:Body>\n                
+      </soap:Envelope>")
+  } 
+  
+  if (type == "OnToDate") {
+    
+    body <- paste0(
+      "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n
+      <soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n
+      <soap:Body>\n                
+      <", name, " xmlns=\"http://web.cbr.ru/\">\n
+      <OnDate>", firstDate, "</OnDate>\n
+      <ToDate>", secondDate, "</ToDate>\n                
+      </", name, ">\n
+      </soap:Body>\n                
+      </soap:Envelope>")
+  } 
+  
+  if (type == "dt") {
+    
+    body <- paste0(
+      "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n
+      <soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n                
+      <soap:Body>\n                
+      <", name, " xmlns=\"http://web.cbr.ru/\">\n
+      <dt>", secondDate, "</dt>\n
+      </", name, ">\n
+      </soap:Body>\n
+      </soap:Envelope>")
+  } 
+  
+  if (type == "OnDate") {
+    
+    body <- paste0(
+      "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n
+      <soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n
+      <soap:Body>\n
+      <", name, " xmlns=\"http://web.cbr.ru/\">\n
+          <OnDate>", secondDate, "</OnDate>\n           
+        </", name, ">\n
+      </soap:Body>\n
+    </soap:Envelope>")
+  } 
+  
+  doc <- cbr_get_body(body, name)
+  
+  node <- cbr_requests[cbr_requests$name == name, "node"]
+  xml_node <- XML::getNodeSet(doc, paste0("//", node))
+  df <- XML::xmlToDataFrame(doc, nodes = xml_node)
+  
+  if (nrow(df) == 0) { 
+    warning("Probably no data on that date.")
+    return(NULL)
+  }
+  
+  return(df)
+  } 
+
+
+
