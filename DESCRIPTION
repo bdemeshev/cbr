@@ -14,5 +14,7 @@ Imports:
     reshape2 (>= 1.4.1),
     SSOAP (>= 0.9-0),
     xts (>= 0.9-7)
+Suggests:
+    forecast (>=6.0)
 License: GPL-2
 RoxygenNote: 5.0.1
