@@ -6,19 +6,6 @@
 install.packages("devtools")
 devtools::install_github("bdemeshev/cbr")
 ```
-Может потребоваться ручная установка пакета `SSOAP`:
-```r
-install.packages('SSOAP', repos = 'http://www.omegahat.org/R',   dependencies = TRUE, type = 'source')
-```
-Если ссылка не работает, попробуйте версию 0.9:
-```r
-install_github("bdemeshev/SSOAP")
-```
-Возможно также потребуется пакет `XMLSchema`:
-```r
-install_github("omegahat/XMLSchema")
-```
-
 
 Для новичков в R: Пакеты устанавливаются один раз, и каждый раз для скачанивания рядов выполнять эти команды совершенно ненужно :)
 
@@ -40,30 +27,49 @@ df <- cbr_metal(from = '2012-01-01', to = '2013-01-09')
 df <- cbr_swap(from = '2012-01-01', to = '2013-01-09')
 ```
 
-Пакет в самом начале разработки. План:
 
-- [ ] функции Марселя Салихова, работающие через `SSOAP`
-- [ ] табличка с названиями валют и их внутренними кодами
-- [ ] встроенный набор данных для демо целей
+- получения динамики котировок драгоценных металлов `cbr_metal(from = , to = )`
+- получения динамики ставок межбанковского рынка `cbr_credit_rates(from = , to = )`
+- получения динамики ставок "валютный своп" `cbr_swap(from = , to = )`
+- получения динамики отпускных цен Банка России на инвестиционные монеты `cbr_coins(from = , to = )`
 
-# cbr
+## Веб-сервис получения информации по рынку ценных бумаг
+
+Посмотрим на вспомогательный датафрейм, в котором содержится информация о всех переменных рынка ценных бумаг с которыми работает пакет `cbr`:
+```r 
+data("cbr_requests")
+cbr_requests
+```
+
+
+Давайте посмотрим на данные сессии прямого РЕПО по фиксированной ставке (RepoSessionXML):
+```r
+repo <- cbr_security_info("RepoSessionXML")
+head(repo)
+```
+
+Есть очень короткое введение в пакет [в виде виньетки](http://htmlpreview.github.io/?https://github.com/bdemeshev/cbr/blob/master/inst/doc/cbr_intro.html).
+
+тудушки:
+
+- [ ] табличка с кодами валют
+- [ ] другие XML с ЦБ
+- [ ] описание переменных в cbr_requests
+- [ ] стандартизировать body XML запросов
+- [ ] убрать зависимость от plyr? один вызов
+- [ ] XML функции стандартизировать под одну
+- [ ] преобразование типов переменных!!!!
+- [ ] встроенные набора данных для демо-целей
+
+
+# English translation cbr
+
 The R-package `cbr` is designed for downloading data from [cbr.ru](http://cbr.ru/). The package may be installed with two commands:
 ```r
 install.packages("devtools")
 devtools::install_github("bdemeshev/cbr")
 ```
-Probably one should manually install `SSOAP` R-package:
-```r
-install.packages('SSOAP', repos = 'http://www.omegahat.org/R',   dependencies = TRUE, type = 'source')
-```
-If the link is not working, try
-```r
-install_github("bdemeshev/SSOAP")
-```
-Also install `XMLSchema`:
-```r
-install_github("omegahat/XMLSchema")
-```
+
 
 Let's downloads exchange rate for burundi frank :)
 ```r
