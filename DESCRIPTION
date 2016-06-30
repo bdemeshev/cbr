@@ -13,7 +13,10 @@ Imports:
     RCurl (>= 1.95-4.7),
     plyr (>= 1.8)
 Suggests:
-    forecast (>= 6.0)
+    forecast (>= 6.0),
+    knitr,
+    rmarkdown
 License: GPL-2
 LazyData: no
 RoxygenNote: 5.0.1
+VignetteBuilder: knitr
