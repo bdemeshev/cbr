@@ -443,7 +443,7 @@ cbr_security_info <- function(name,
                               firstDate = as.Date("2000-01-01"), 
                               secondDate = Sys.Date()) {
   
-  type <- cbr::cbr_requests[cbr::cbr_requests$name == name, "type"]
+  type <- cbr_requests[cbr_requests$name == name, "type"]
   
   if (length(type) == 0) {
     stop("The name ", name, " is not supported by Central Bank or by this function.") 
@@ -506,7 +506,7 @@ cbr_security_info <- function(name,
   
   doc <- cbr_get_body(body, name)
   
-  node <- cbr::cbr_requests[cbr::cbr_requests$name == name, "node"]
+  node <- cbr_requests[cbr_requests$name == name, "node"]
   xml_node <- XML::getNodeSet(doc, paste0("//", node))
   df <- XML::xmlToDataFrame(doc, nodes = xml_node)
   

@@ -3,7 +3,7 @@ Type: Package
 Title: Download data from cbr.ru, Central Bank of Russia
 Version: 0.1
 Date: 2016-02-01
-Author: Marcel Salikhov, Boris Demeshev
+Author: Marcel Salikhov, Boris Demeshev, Artem Simakin
 Maintainer: Boris Demeshev <boris.demeshev@gmail.com>
 Description: Functions for downloading data from cbr.ru.
 Depends:
@@ -15,4 +15,5 @@ Imports:
 Suggests:
     forecast (>= 6.0)
 License: GPL-2
+LazyData: no
 RoxygenNote: 5.0.1
