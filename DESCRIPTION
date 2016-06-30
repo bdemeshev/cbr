@@ -1,8 +1,8 @@
 Package: cbr
 Type: Package
 Title: Download data from cbr.ru, Central Bank of Russia
-Version: 0.1
-Date: 2016-02-01
+Version: 0.2
+Date: 2016-06-30
 Author: Marcel Salikhov, Boris Demeshev, Artem Simakin
 Maintainer: Boris Demeshev <boris.demeshev@gmail.com>
 Description: Functions for downloading data from cbr.ru.

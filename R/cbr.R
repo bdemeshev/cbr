@@ -4,6 +4,8 @@
 #' @docType package
 #' @author Marcel Salikhov, Boris Demeshev
 
+data("cbr_requests", envir = environment())
+data("cbr_requests_unsupported", envir = environment())
 
 
 #' Convert string with a number in Russian tradition in numeric
@@ -438,7 +440,7 @@ cbr_get_body <- function(body, name) {
 #' @export
 #' @return data.frame
 #' @examples
-#' df <- cbr_security_info("AuctionXML")
+#' df <- cbr_security_info("AuctionsXML")
 cbr_security_info <- function(name, 
                               firstDate = as.Date("2000-01-01"), 
                               secondDate = Sys.Date()) {

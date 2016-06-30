@@ -24,6 +24,6 @@ Convert list from xml to data.frame without changes
 Convert list from xml to data.frame without changes
 }
 \examples{
-df <- cbr_security_info("AuctionXML")
+df <- cbr_security_info("AuctionsXML")
 }
 
