@@ -23,15 +23,15 @@ Create body of html-request
 \examples{
 body <- paste0(
 "<?xml version=\\"1.0\\" encoding=\\"utf-8\\"?>\\n
-<soap:Envelope xmlns:xsi=\\"http://www.w3.org/2001/XMLSchema-instance\\" 
-  xmlns:xsd=\\"http://www.w3.org/2001/XMLSchema\\" 
+<soap:Envelope xmlns:xsi=\\"http://www.w3.org/2001/XMLSchema-instance\\"
+  xmlns:xsd=\\"http://www.w3.org/2001/XMLSchema\\"
   xmlns:soap=\\"http://schemas.xmlsoap.org/soap/envelope/\\">\\n
-    <soap:Body>\\n                
+    <soap:Body>\\n
       <AuctionsXML xmlns=\\"http://web.cbr.ru/\\">\\n
         <DateFrom>2015-01-01</DateFrom>\\n
-        <DateTo>2015-06-01</DateTo>\\n                
+        <DateTo>2015-06-01</DateTo>\\n
       </AuctionsXML>\\n
-    </soap:Body>\\n                
+    </soap:Body>\\n
 </soap:Envelope>")
 cbr_get_body(body, "AuctionsXML")
 }
