@@ -56,7 +56,7 @@ chr2date <- function(chr) {
 #' @return data.frame
 #' @export
 #' @examples
-#' extractXML('http://www.cbr.ru/scripts/xml_swap.asp?date_req1=01/12/2002&date_req2=06/12/2002')
+#' extractXML('https://cbr.ru/scripts/xml_swap.asp?date_req1=01/12/2002&date_req2=06/12/2002')
 extractXML <- function(url) {
   url.xml <- RCurl::getURL(url)
 
@@ -135,7 +135,7 @@ cbr_cur_ondate <- function(ondate = "2016-06-14") {
 
   # onDate = '2016-06-14'
 
-  url <- paste0("http://www.cbr.ru/scripts/XML_daily_eng.asp?date_req=", chr2date(ondate))
+  url <- paste0("https://cbr.ru/scripts/XML_daily_eng.asp?date_req=", chr2date(ondate))
 
   df <- extractXML(url)
 
@@ -173,7 +173,7 @@ cbr_currency <- function(currency = "R01120",
   # from <- '1993-01-05'
   # to <- '2013-09-18'
 
-  url <- paste0("http://www.cbr.ru/scripts/XML_dynamic.asp?date_req1=",
+  url <- paste0("https://cbr.ru/scripts/XML_dynamic.asp?date_req1=",
                 chr2date(from), "&date_req2=", chr2date(to), "&VAL_NM_RQ=", currency)
 
   df <- extractXML(url)
@@ -210,7 +210,7 @@ cbr_balances <- function(from = "2007-01-01", to = "2013-01-01") {
 
   # from='2007-01-01' to='2013-01-01'
 
-  url <- paste0("http://www.cbr.ru/scripts/XML_ostat.asp?date_req1=",
+  url <- paste0("https://cbr.ru/scripts/XML_ostat.asp?date_req1=",
                 chr2date(from), "&date_req2=", chr2date(to))
 
   df <- extractXML(url)
@@ -245,7 +245,7 @@ cbr_metal <- function(from = "2007-01-01", to = "2013-01-01") {
 
   # from='2007-01-01' to='2013-01-01'
 
-  url <- paste0("http://www.cbr.ru/scripts/xml_metall.asp?date_req1=",
+  url <- paste0("https://cbr.ru/scripts/xml_metall.asp?date_req1=",
                 chr2date(from), "&date_req2=", chr2date(to))
 
   df <- extractXML(url)
@@ -283,7 +283,7 @@ cbr_credit_rates <- function(from = "2007-01-01", to = "2013-01-01") {
 
   # from='2007-01-01' to='2013-01-01'
 
-  url <- paste0("http://www.cbr.ru/scripts/xml_mkr.asp?date_req1=",
+  url <- paste0("https://cbr.ru/scripts/xml_mkr.asp?date_req1=",
                 chr2date(from), "&date_req2=", chr2date(to))
 
   df <- extractXML(url)
@@ -320,7 +320,7 @@ cbr_swap <- function(from = "2007-01-01", to = "2013-01-01") {
 
   # from='2007-01-01' to='2013-01-01'
 
-  url <- paste0("http://www.cbr.ru/scripts/xml_swap.asp?date_req1=",
+  url <- paste0("https://cbr.ru/scripts/xml_swap.asp?date_req1=",
                 chr2date(from), "&date_req2=", chr2date(to))
 
   df <- extractXML(url)
@@ -364,7 +364,7 @@ cbr_coins <- function(from = "2007-01-01", to = "2013-01-01") {
 
   # from='2007-01-01' to='2013-01-01'
 
-  url <- paste0("http://www.cbr.ru/scripts/XMLCoinsBase.asp?date_req1=",
+  url <- paste0("https://cbr.ru/scripts/XMLCoinsBase.asp?date_req1=",
                 chr2date(from), "&date_req2=", chr2date(to))
 
   df <- extractXML(url)
@@ -396,7 +396,7 @@ cbr_coins <- function(from = "2007-01-01", to = "2013-01-01") {
 #' Create body of html-request
 #'
 #' @param body the body of html-request
-#' @param name the name of variable from http://www.cbr.ru/secinfo/secinfo.asmx
+#' @param name the name of variable from https://cbr.ru/secinfo/secinfo.asmx
 #' @export
 #' @return XML-tree
 #' @examples
@@ -415,9 +415,9 @@ cbr_coins <- function(from = "2007-01-01", to = "2013-01-01") {
 #' cbr_get_body(body, "AuctionsXML")
 cbr_get_body <- function(body, name) {
   h <- RCurl::basicTextGatherer()
-  url <- "http://cbr.ru/secinfo/secinfo.asmx"
+  url <- "https://cbr.ru/secinfo/secinfo.asmx"
 
-  HeaderFields <- c(Accept = "text/xml", Accept = "multipart/*", SOAPAction = paste("\"http://web.cbr.ru/",
+  HeaderFields <- c(Accept = "text/xml", Accept = "multipart/*", SOAPAction = paste("\"https://web.cbr.ru/",
                                                                                     name, "\"", sep = ""), `Content-Type` = "text/xml; charset=utf-8")
   RCurl::curlPerform(url = url, httpheader = HeaderFields, postfields = body,
                      writefunction = h$update)
@@ -434,7 +434,7 @@ cbr_get_body <- function(body, name) {
 #'
 #' Convert list from xml to data.frame without changes
 #'
-#' @param name the name of variable from http://www.cbr.ru/secinfo/secinfo.asmx
+#' @param name the name of variable from https://cbr.ru/secinfo/secinfo.asmx
 #' @param firstDate start of period, Date, as.Date("2000-01-01") by default
 #' @param secondDate end of period, Date, Sys.Date() by default
 #' @export
