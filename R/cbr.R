@@ -169,10 +169,6 @@ cbr_cur_ondate <- function(ondate = "2016-06-14") {
 cbr_currency <- function(currency = "R01120",
                          from = "1993-01-05", to = "2013-09-18") {
 
-  # currency <- 'R01120'
-  # from <- '1993-01-05'
-  # to <- '2013-09-18'
-
   url <- paste0("https://cbr.ru/scripts/XML_dynamic.asp?date_req1=",
                 chr2date(from), "&date_req2=", chr2date(to), "&VAL_NM_RQ=", currency)
 
@@ -181,13 +177,16 @@ cbr_currency <- function(currency = "R01120",
   if (is.null(df)) {
     message("No data on that date.")
   } else {
-    names(df) <- c("units", currency, "date")
+    names(df) <- c("units", "value", "value2", "date", "currency")
 
     # correct type
     df$units <- rus2num(df$units)
-    df[, 2] <- rus2num(df[, 2])
+    df$value <- rus2num(df$value)
+    #df[, 2] <- rus2num(df[, 2])
     df$date <- as.Date(df$date, format = "%d.%m.%Y")
   }
+
+  df <- df[-3]
 
   return(df)
 }
