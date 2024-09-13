@@ -15,8 +15,10 @@ Imports:
 Suggests:
     forecast (>= 6.0),
     knitr,
-    rmarkdown
+    rmarkdown,
+    testthat (>= 3.0.0)
 License: GPL-2
 LazyData: no
 RoxygenNote: 5.0.1
 VignetteBuilder: knitr
+Config/testthat/edition: 3
