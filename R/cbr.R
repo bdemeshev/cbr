@@ -417,7 +417,7 @@ cbr_get_body <- function(body, name) {
   h <- RCurl::basicTextGatherer()
   url <- "https://cbr.ru/secinfo/secinfo.asmx"
 
-  HeaderFields <- c(Accept = "text/xml", Accept = "multipart/*", SOAPAction = paste("\"https://web.cbr.ru/",
+  HeaderFields <- c(Accept = "text/xml", Accept = "multipart/*", SOAPAction = paste("\"https://cbr.ru/",
                                                                                     name, "\"", sep = ""), `Content-Type` = "text/xml; charset=utf-8")
   RCurl::curlPerform(url = url, httpheader = HeaderFields, postfields = body,
                      writefunction = h$update)
