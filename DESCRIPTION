@@ -1,7 +1,7 @@
 Package: cbr
 Type: Package
 Title: Download data from cbr.ru, Central Bank of Russia
-Version: 0.2.1
+Version: 0.3.0
 Date: 2024-09-12
 Author: Marcel Salikhov, Boris Demeshev, Artem Simakin, Ivan Z <i2z1@ddslab.ru>
 Maintainer: Boris Demeshev <boris.demeshev@gmail.com>
@@ -15,8 +15,10 @@ Imports:
 Suggests:
     forecast (>= 6.0),
     knitr,
-    rmarkdown
+    rmarkdown,
+    testthat (>= 3.0.0)
 License: GPL-2
 LazyData: no
 RoxygenNote: 5.0.1
 VignetteBuilder: knitr
+Config/testthat/edition: 3
