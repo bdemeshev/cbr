@@ -51,7 +51,7 @@ head(currency)
 -  получения динамики котировок `cbr_currency(currency = , from = , to = )`
 
 ```{r}
-currency <- cbr_currency(currency = "R01150", from = "1993-01-05", to = "2013-09-18")
+currency <- cbr_currency(currency = "R01150", from = "2023-01-05", to = "2024-09-18")
 head(currency)
 ```
 
