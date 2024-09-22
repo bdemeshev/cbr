@@ -4,10 +4,10 @@
 \alias{cbr_currency}
 \title{Historical currency prices from Central Bank of Russia.}
 \usage{
-cbr_currency(currency = "R01120", from = "1993-01-05", to = "2013-09-18")
+cbr_currency(currency = "R01239", from = Sys.Date(), to = Sys.Date())
 }
 \arguments{
-\item{currency}{internal Central Bank currency code starting with the letter 'R'}
+\item{currency}{internal Central Bank currency code starting with the letter 'R' -- full list at https://cbr.ru/scripts/XML_val.asp?d=0}
 
 \item{from}{the first day of the time interval, character or Date}
 
@@ -19,12 +19,6 @@ data.frame with historical currency prices from cbr.ru
 \description{
 Historical currency prices from Central Bank of Russia.
 }
-\details{
-Historical currency prices from Central Bank of Russia.
-}
 \examples{
-df <- cbr_currency(currency = 'R01120',
-  from = '1993-01-05', to = '2013-01-09')
-# 'R01120' --- Burundi frank :)
+df <- cbr_currency(currency = "R01239", from = "2024-09-01", to = "2024-09-10") # Euro
 }
-

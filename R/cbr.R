@@ -122,19 +122,15 @@ cbr_cur_ondate <- function(ondate = "2016-06-14") {
 
 #' Historical currency prices from Central Bank of Russia.
 #'
-#' @param currency internal Central Bank currency code starting with the letter 'R'
+#' @param currency internal Central Bank currency code starting with the letter 'R' -- full list at https://cbr.ru/scripts/XML_val.asp?d=0
 #' @param from the first day of the time interval, character or Date
 #' @param to the last day of the time interval, character or Date
 #' @return data.frame with historical currency prices from cbr.ru
 #' @export
 #' @examples
-#' df <- cbr_currency(
-#'   currency = "R01120",
-#'   from = "1993-01-05", to = "2013-01-09"
-#' )
-#' # 'R01120' --- Burundi frank :)
-cbr_currency <- function(currency = "R01120",
-                         from = "1993-01-05", to = "2013-09-18") {
+#' df <- cbr_currency(currency = "R01239", from = "2024-09-01", to = "2024-09-10") # Euro
+cbr_currency <- function(currency = "R01239",
+                         from = Sys.Date(), to = Sys.Date()) {
   url <- paste0(
     "https://cbr.ru/scripts/XML_dynamic.asp?date_req1=",
     chr2date(from), "&date_req2=", chr2date(to), "&VAL_NM_RQ=", currency
@@ -142,8 +138,9 @@ cbr_currency <- function(currency = "R01120",
 
   df <- extractXML(url)
 
-  if (is.null(df)) {
-    message("No data on that date.")
+  if (is.null(df) | typeof(df)=="character") {
+    message(paste("No data on period from ", from, "to", to, "for currency", currency))
+    return(NA)
   } else {
     names(df) <- c("units", "value", "value2", "date", "currency")
 
