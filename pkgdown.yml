@@ -1,0 +1,9 @@
+pandoc: 3.1.11
+pkgdown: 2.1.1
+pkgdown_sha: ~
+articles:
+  cbr_intro: cbr_intro.html
+last_built: 2024-09-22T20:42Z
+urls:
+  reference: https://i2z1.github.io/cbr/reference
+  article: https://i2z1.github.io/cbr/articles
