@@ -1,10 +1,7 @@
-
 data("cbr_requests", envir = environment())
 data("cbr_requests_unsupported", envir = environment())
 
 
-#' Convert string with a number in Russian tradition in numeric
-#'
 #' Convert string with a number in Russian tradition in numeric
 #'
 #' Russian standards prescribes to use comma as a decimal separator.
@@ -14,7 +11,7 @@ data("cbr_requests_unsupported", envir = environment())
 #' @return numeric the number converted from the string
 #' @export
 #' @examples
-#' rus2num('34 345,34')
+#' rus2num("34 345,34")
 rus2num <- function(x) {
   x <- gsub(",", ".", x)
   x <- gsub(" ", "", x)
@@ -22,36 +19,26 @@ rus2num <- function(x) {
 }
 
 
-
-#' Convert character in Date format needed to create url
-#'
-#' Convert character in Date format needed to create url
-#'
 #' Convert character in Date format needed to create url
 #'
 #' @param chr the date in character format
 #' @return Date the date converted from the character
 #' @export
 #' @examples
-#' chr2date('2016-06-14')
+#' chr2date("2016-06-14")
 chr2date <- function(chr) {
-  chr <- as.Date(chr)
-  chr.chr <- as.character(chr, format = "%d.%m.%Y")
+  chr <- as.Date(chr, format = "%Y-%m-%d")
+  chr.chr <- format(chr, "%d/%m/%Y")
 }
 
 
-
-#' Convert list from xml to data.frame with little changes
-#'
-#' Convert list from xml to data.frame with little changes
-#'
 #' Convert list from xml to data.frame with little changes
 #'
 #' @param url the url of xml list of data
 #' @return data.frame
 #' @export
 #' @examples
-#' extractXML('http://www.cbr.ru/scripts/xml_swap.asp?date_req1=01/12/2002&date_req2=06/12/2002')
+#' extractXML("https://cbr.ru/scripts/xml_swap.asp?date_req1=01/12/2002&date_req2=06/12/2002")
 extractXML <- function(url) {
   url.xml <- RCurl::getURL(url)
 
@@ -68,7 +55,6 @@ extractXML <- function(url) {
     df <- plyr::ldply(cur.list, unlist)
     df <- df[, -1]
     names(df) <- tolower(names(df))
-
   }
 
   return(df)
@@ -76,8 +62,6 @@ extractXML <- function(url) {
 
 
 
-#' Convert excel numeric date encoding to date
-#'
 #' Convert excel numeric date encoding to date
 #'
 #' While reading excel files dates are sometimes replaced by their numeric codes.
@@ -94,43 +78,34 @@ excel2date <- function(x) {
 }
 
 
-
-#' Drops last entry in the list x if this entry is character
-#'
-#' Drops last entry in the list x if this entry is character
-#'
 #' Drops last entry in the list x if this entry is character
 #'
 #' @param x the list
 #' @return list with omitted last element
 #' @examples
-#' a <- list(x = 5, y = 'last')
+#' a <- list(x = 5, y = "last")
 #' cbr:::droplast(a)
 droplast <- function(x) {
   n.obs <- length(x)
-  if (class(x[[n.obs]]) == "character")
+  if (class(x[[n.obs]]) == "character") {
     x <- x[-n.obs]
+  }
   return(x)
 }
 
 
-
-#' Actual currency prices from Central Bank of Russia on date.
-#'
-#' Actual currency prices from Central Bank of Russia on date.
-#'
 #' Actual currency prices from Central Bank of Russia on date.
 #'
 #' @param ondate the date of actual currency prices, character or Date
 #' @return data.frame with actual currency prices on date from cbr.ru
 #' @export
 #' @examples
-#' df <- cbr_cur_ondate(ondate = '2016-06-14')
+#' df <- cbr_cur_ondate(ondate = "2016-06-14")
 cbr_cur_ondate <- function(ondate = "2016-06-14") {
-
   # onDate = '2016-06-14'
 
-  url <- paste0("http://www.cbr.ru/scripts/XML_daily_eng.asp?date_req=", chr2date(ondate))
+  url <- paste0("https://cbr.ru/scripts/XML_daily_eng.asp?date_req=", chr2date(ondate))
+
 
   df <- extractXML(url)
 
@@ -145,11 +120,6 @@ cbr_cur_ondate <- function(ondate = "2016-06-14") {
 }
 
 
-
-#' Historical currency prices from Central Bank of Russia.
-#'
-#' Historical currency prices from Central Bank of Russia.
-#'
 #' Historical currency prices from Central Bank of Russia.
 #'
 #' @param currency internal Central Bank currency code starting with the letter 'R'
@@ -158,41 +128,39 @@ cbr_cur_ondate <- function(ondate = "2016-06-14") {
 #' @return data.frame with historical currency prices from cbr.ru
 #' @export
 #' @examples
-#' df <- cbr_currency(currency = 'R01120',
-#'   from = '1993-01-05', to = '2013-01-09')
+#' df <- cbr_currency(
+#'   currency = "R01120",
+#'   from = "1993-01-05", to = "2013-01-09"
+#' )
 #' # 'R01120' --- Burundi frank :)
 cbr_currency <- function(currency = "R01120",
                          from = "1993-01-05", to = "2013-09-18") {
-
-  # currency <- 'R01120'
-  # from <- '1993-01-05'
-  # to <- '2013-09-18'
-
-  url <- paste0("http://www.cbr.ru/scripts/XML_dynamic.asp?date_req1=",
-                chr2date(from), "&date_req2=", chr2date(to), "&VAL_NM_RQ=", currency)
+  url <- paste0(
+    "https://cbr.ru/scripts/XML_dynamic.asp?date_req1=",
+    chr2date(from), "&date_req2=", chr2date(to), "&VAL_NM_RQ=", currency
+  )
 
   df <- extractXML(url)
 
   if (is.null(df)) {
     message("No data on that date.")
   } else {
-    names(df) <- c("units", currency, "date")
+    names(df) <- c("units", "value", "value2", "date", "currency")
+
 
     # correct type
     df$units <- rus2num(df$units)
-    df[, 2] <- rus2num(df[, 2])
+    df$value <- rus2num(df$value)
+    # df[, 2] <- rus2num(df[, 2])
     df$date <- as.Date(df$date, format = "%d.%m.%Y")
   }
+
+  df <- df[-3]
 
   return(df)
 }
 
 
-
-#' Credit institutions balances on correspondent accounts with Bank of Russia.
-#'
-#' Credit institutions balances on correspondent accounts with Bank of Russia.
-#'
 #' Credit institutions balances on correspondent accounts with Bank of Russia.
 #'
 #' @param from the first day of the time interval, character or Date
@@ -200,13 +168,14 @@ cbr_currency <- function(currency = "R01120",
 #' @return data.frame with credit institutions balance from cbr.ru
 #' @export
 #' @examples
-#' df <- cbr_balances(from = '2012-01-01', to = '2013-01-09')
+#' df <- cbr_balances(from = "2012-01-01", to = "2013-01-09")
 cbr_balances <- function(from = "2007-01-01", to = "2013-01-01") {
-
   # from='2007-01-01' to='2013-01-01'
 
-  url <- paste0("http://www.cbr.ru/scripts/XML_ostat.asp?date_req1=",
-                chr2date(from), "&date_req2=", chr2date(to))
+  url <- paste0(
+    "https://cbr.ru/scripts/XML_ostat.asp?date_req1=",
+    chr2date(from), "&date_req2=", chr2date(to)
+  )
 
   df <- extractXML(url)
 
@@ -216,7 +185,6 @@ cbr_balances <- function(from = "2007-01-01", to = "2013-01-01") {
     # correct type
     names(df) <- c("russia", "moscow", "date")
     df$date <- as.Date(df$date, format = "%d.%m.%Y")
-
   }
 
   return(df)
@@ -235,13 +203,15 @@ cbr_balances <- function(from = "2007-01-01", to = "2013-01-01") {
 #' @return data.frame with historical metal prices from cbr.ru
 #' @export
 #' @examples
-#' df <- cbr_metal(from = '2012-01-01', to = '2013-01-09')
+#' df <- cbr_metal(from = "2012-01-01", to = "2013-01-09")
 cbr_metal <- function(from = "2007-01-01", to = "2013-01-01") {
-
   # from='2007-01-01' to='2013-01-01'
 
-  url <- paste0("http://www.cbr.ru/scripts/xml_metall.asp?date_req1=",
-                chr2date(from), "&date_req2=", chr2date(to))
+
+  url <- paste0(
+    "https://cbr.ru/scripts/xml_metall.asp?date_req1=",
+    chr2date(from), "&date_req2=", chr2date(to)
+  )
 
   df <- extractXML(url)
 
@@ -273,13 +243,14 @@ cbr_metal <- function(from = "2007-01-01", to = "2013-01-01") {
 #' @return data.frame with historical credit rates from cbr.ru
 #' @export
 #' @examples
-#' df <- cbr_credit_rates(from = '2013-01-01', to = '2013-03-09')
-cbr_credit_rates <- function(from = "2013-01-01", to = "2013-06-01") {
-
+#' df <- cbr_credit_rates(from = "2012-01-01", to = "2013-01-09")
+cbr_credit_rates <- function(from = "2007-01-01", to = "2013-01-01") {
   # from='2007-01-01' to='2013-01-01'
 
-  url <- paste0("http://www.cbr.ru/scripts/xml_mkr.asp?date_req1=",
-                chr2date(from), "&date_req2=", chr2date(to))
+  url <- paste0(
+    "https://cbr.ru/scripts/xml_mkr.asp?date_req1=",
+    chr2date(from), "&date_req2=", chr2date(to)
+  )
 
   df <- extractXML(url)
 
@@ -289,20 +260,16 @@ cbr_credit_rates <- function(from = "2013-01-01", to = "2013-06-01") {
     # correct type
     names(df) <- c("daily", "weekly", "monthly", "3months", "halfyear", "yearly", "date", "code")
 
-    df$date <- as.Date(paste0(substring(df$date, first = 1, last = 2),
-                              ".", substring(df$date, first = 4, last = 5),
-                              ".", substring(df$date, first = 7, last = 10)), format = "%d.%m.%Y")
+    df$date <- as.Date(paste0(
+      substring(df$date, first = 1, last = 2),
+      ".", substring(df$date, first = 4, last = 5),
+      ".", substring(df$date, first = 7, last = 10)
+    ), format = "%d.%m.%Y")
   }
 
   return(df)
 }
 
-
-
-#' Historical swap prices from Central Bank of Russia.
-#'
-#' Historical swap prices from Central Bank of Russia.
-#'
 #' Historical swap prices from Central Bank of Russia.
 #'
 #' @param from the first day of the time interval, character or Date
@@ -310,13 +277,14 @@ cbr_credit_rates <- function(from = "2013-01-01", to = "2013-06-01") {
 #' @return data.frame with historical swap prices from cbr.ru
 #' @export
 #' @examples
-#' df <- cbr_swap(from = '2012-01-01', to = '2013-01-09')
+#' df <- cbr_swap(from = "2012-01-01", to = "2013-01-09")
 cbr_swap <- function(from = "2007-01-01", to = "2013-01-01") {
-
   # from='2007-01-01' to='2013-01-01'
 
-  url <- paste0("http://www.cbr.ru/scripts/xml_swap.asp?date_req1=",
-                chr2date(from), "&date_req2=", chr2date(to))
+  url <- paste0(
+    "https://cbr.ru/scripts/xml_swap.asp?date_req1=",
+    chr2date(from), "&date_req2=", chr2date(to)
+  )
 
   df <- extractXML(url)
 
@@ -324,8 +292,10 @@ cbr_swap <- function(from = "2007-01-01", to = "2013-01-01") {
     message("No data on that date.")
   } else {
     # correct type
-    names(df) <- c("datebuy", "datesell", "baserate", "sd", "tir", "ir",
-                   "euro")
+    names(df) <- c(
+      "datebuy", "datesell", "baserate", "sd", "tir", "ir",
+      "euro"
+    )
 
     # types
     df$baserate <- rus2num(df$baserate)
@@ -341,12 +311,6 @@ cbr_swap <- function(from = "2007-01-01", to = "2013-01-01") {
   return(df)
 }
 
-
-
-#' Release Prices of the Bank of Russia for Investment Coins.
-#'
-#' Release Prices of the Bank of Russia for Investment Coins.
-#'
 #' Release Prices of the Bank of Russia for Investment Coins.
 #'
 #' @param from the first day of the time interval, character or Date
@@ -354,13 +318,9 @@ cbr_swap <- function(from = "2007-01-01", to = "2013-01-01") {
 #' @return data.frame with historical release prices for investment coins from cbr.ru
 #' @export
 #' @examples
-#' df <- cbr_coins(from = '2012-01-01', to = '2013-01-09')
+#' df <- cbr_coins(from = "2012-01-01", to = "2013-01-09")
 cbr_coins <- function(from = "2007-01-01", to = "2013-01-01") {
-
-  # from='2007-01-01' to='2013-01-01'
-
-  url <- paste0("http://www.cbr.ru/scripts/XMLCoinsBase.asp?date_req1=",
-                chr2date(from), "&date_req2=", chr2date(to))
+  url <- paste0("https://cbr.ru/scripts/XMLCoinsBase.asp?date_req1=", chr2date(from), "&date_req2=", chr2date(to))
 
   df <- extractXML(url)
 
@@ -371,9 +331,11 @@ cbr_coins <- function(from = "2007-01-01", to = "2013-01-01") {
     # correct type
     names(df) <- c("date", "price", "nominal", "metaltype", "metalquantity", "coinid")
 
-    df$date <- as.Date(paste0(substring(df$date, first = 1, last = 2),
-                              ".", substring(df$date, first = 4, last = 5),
-                              ".", substring(df$date, first = 7, last = 10)), format = "%d.%m.%Y")
+    df$date <- as.Date(paste0(
+      substring(df$date, first = 1, last = 2),
+      ".", substring(df$date, first = 4, last = 5),
+      ".", substring(df$date, first = 7, last = 10)
+    ), format = "%d.%m.%Y")
 
     df$price <- rus2num(df$price)
     df$metalquantity <- rus2num(df$metalquantity)
@@ -382,21 +344,15 @@ cbr_coins <- function(from = "2007-01-01", to = "2013-01-01") {
   return(df)
 }
 
-
-
-#' Create body of html-request
-#'
-#' Create body of html-request
-#'
 #' Create body of html-request
 #'
 #' @param body the body of html-request
-#' @param name the name of variable from http://www.cbr.ru/secinfo/secinfo.asmx
+#' @param name the name of variable from https://cbr.ru/secinfo/secinfo.asmx
 #' @export
 #' @return XML-tree
 #' @examples
 #' body <- paste0(
-#' "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n
+#'   "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n
 #' <soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"
 #'   xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"
 #'   xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n
@@ -406,30 +362,34 @@ cbr_coins <- function(from = "2007-01-01", to = "2013-01-01") {
 #'         <DateTo>2015-06-01</DateTo>\n
 #'       </AuctionsXML>\n
 #'     </soap:Body>\n
-#' </soap:Envelope>")
+#' </soap:Envelope>"
+#' )
 #' cbr_get_body(body, "AuctionsXML")
 cbr_get_body <- function(body, name) {
   h <- RCurl::basicTextGatherer()
-  url <- "http://cbr.ru/secinfo/secinfo.asmx"
 
-  HeaderFields <- c(Accept = "text/xml", Accept = "multipart/*", SOAPAction = paste("\"http://web.cbr.ru/",
-                                                                                    name, "\"", sep = ""), `Content-Type` = "text/xml; charset=utf-8")
-  RCurl::curlPerform(url = url, httpheader = HeaderFields, postfields = body,
-                     writefunction = h$update)
+  url <- "https://cbr.ru/secinfo/secinfo.asmx"
+
+  HeaderFields <- c(
+    Accept = "text/xml",
+    Accept = "multipart/*",
+    SOAPAction = paste("\"https://cbr.ru/", name, "\"", sep = ""),
+    `Content-Type` = "text/xml; charset=utf-8"
+  )
+
+  RCurl::curlPerform(
+    url = url, httpheader = HeaderFields, postfields = body,
+    writefunction = h$update
+  )
   response <- h$value()
   doc <- XML::xmlInternalTreeParse(response)
   return(doc)
 }
 
 
-
 #' Convert list from xml to data.frame without changes
 #'
-#' Convert list from xml to data.frame without changes
-#'
-#' Convert list from xml to data.frame without changes
-#'
-#' @param name the name of variable from http://www.cbr.ru/secinfo/secinfo.asmx
+#' @param name the name of variable from https://cbr.ru/secinfo/secinfo.asmx
 #' @param firstDate start of period, Date, as.Date("2000-01-01") by default
 #' @param secondDate end of period, Date, Sys.Date() by default
 #' @export
@@ -439,7 +399,6 @@ cbr_get_body <- function(body, name) {
 cbr_security_info <- function(name,
                               firstDate = as.Date("2000-01-01"),
                               secondDate = Sys.Date()) {
-
   type <- cbr_requests[cbr_requests$name == name, "type"]
 
   if (length(type) == 0) {
@@ -447,8 +406,6 @@ cbr_security_info <- function(name,
   }
 
   if (type == "DateFromTo") {
-
-    # сформировать тело SOAP запроса
     body <- paste0(
       "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n
       <soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n
@@ -458,11 +415,11 @@ cbr_security_info <- function(name,
       <DateTo>", secondDate, "</DateTo>\n
       </", name, ">\n
       </soap:Body>\n
-      </soap:Envelope>")
+      </soap:Envelope>"
+    )
   }
 
   if (type == "OnToDate") {
-
     body <- paste0(
       "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n
       <soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n
@@ -472,11 +429,11 @@ cbr_security_info <- function(name,
       <ToDate>", secondDate, "</ToDate>\n
       </", name, ">\n
       </soap:Body>\n
-      </soap:Envelope>")
+      </soap:Envelope>"
+    )
   }
 
   if (type == "dt") {
-
     body <- paste0(
       "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n
       <soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n
@@ -485,11 +442,11 @@ cbr_security_info <- function(name,
       <dt>", secondDate, "</dt>\n
       </", name, ">\n
       </soap:Body>\n
-      </soap:Envelope>")
+      </soap:Envelope>"
+    )
   }
 
   if (type == "OnDate") {
-
     body <- paste0(
       "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n
       <soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n
@@ -498,7 +455,8 @@ cbr_security_info <- function(name,
           <OnDate>", secondDate, "</OnDate>\n
         </", name, ">\n
       </soap:Body>\n
-    </soap:Envelope>")
+    </soap:Envelope>"
+    )
   }
 
   doc <- cbr_get_body(body, name)
@@ -513,7 +471,4 @@ cbr_security_info <- function(name,
   }
 
   return(df)
-  }
-
-
-
+}
