@@ -4,7 +4,7 @@
 \alias{cbr_credit_rates}
 \title{Historical credit rates on Interbank Credit Market.}
 \usage{
-cbr_credit_rates(from = "2013-01-01", to = "2013-06-01")
+cbr_credit_rates(from = "2007-01-01", to = "2013-01-01")
 }
 \arguments{
 \item{from}{the first day of the time interval, character or Date}
@@ -21,6 +21,5 @@ Historical credit rates on Interbank Credit Market.
 Historical credit rates on Interbank Credit Market.
 }
 \examples{
-df <- cbr_credit_rates(from = '2013-01-01', to = '2013-03-09')
+df <- cbr_credit_rates(from = "2012-01-01", to = "2013-01-09")
 }
-

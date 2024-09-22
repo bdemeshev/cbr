@@ -17,10 +17,6 @@ data.frame with historical swap prices from cbr.ru
 \description{
 Historical swap prices from Central Bank of Russia.
 }
-\details{
-Historical swap prices from Central Bank of Russia.
-}
 \examples{
-df <- cbr_swap(from = '2012-01-01', to = '2013-01-09')
+df <- cbr_swap(from = "2012-01-01", to = "2013-01-09")
 }
-

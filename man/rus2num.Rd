@@ -13,13 +13,9 @@ rus2num(x)
 numeric the number converted from the string
 }
 \description{
-Convert string with a number in Russian tradition in numeric
-}
-\details{
 Russian standards prescribes to use comma as a decimal separator.
 This function removes spaces and converts string to number.
 }
 \examples{
-rus2num('34 345,34')
+rus2num("34 345,34")
 }
-

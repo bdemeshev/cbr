@@ -15,10 +15,6 @@ data.frame with actual currency prices on date from cbr.ru
 \description{
 Actual currency prices from Central Bank of Russia on date.
 }
-\details{
-Actual currency prices from Central Bank of Russia on date.
-}
 \examples{
-df <- cbr_cur_ondate(ondate = '2016-06-14')
+df <- cbr_cur_ondate(ondate = "2016-06-14")
 }
-

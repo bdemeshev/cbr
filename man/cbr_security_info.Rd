@@ -4,11 +4,14 @@
 \alias{cbr_security_info}
 \title{Convert list from xml to data.frame without changes}
 \usage{
-cbr_security_info(name, firstDate = as.Date("2000-01-01"),
-  secondDate = Sys.Date())
+cbr_security_info(
+  name,
+  firstDate = as.Date("2000-01-01"),
+  secondDate = Sys.Date()
+)
 }
 \arguments{
-\item{name}{the name of variable from http://www.cbr.ru/secinfo/secinfo.asmx}
+\item{name}{the name of variable from https://cbr.ru/secinfo/secinfo.asmx}
 
 \item{firstDate}{start of period, Date, as.Date("2000-01-01") by default}
 
@@ -20,10 +23,6 @@ data.frame
 \description{
 Convert list from xml to data.frame without changes
 }
-\details{
-Convert list from xml to data.frame without changes
-}
 \examples{
 df <- cbr_security_info("AuctionsXML")
 }
-

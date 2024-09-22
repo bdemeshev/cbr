@@ -15,10 +15,6 @@ Date the date converted from the character
 \description{
 Convert character in Date format needed to create url
 }
-\details{
-Convert character in Date format needed to create url
-}
 \examples{
-chr2date('2016-06-14')
+chr2date("2016-06-14")
 }
-
