@@ -1,0 +1,12 @@
+url: https://i2z1.github.io/cbr/
+
+authors:
+  - Marcel Salikhov
+  - Boris Demeshev
+  - Artem Simakin
+  - Ivan Z:
+      href: https://i2z1.ddslab.ru
+
+template:
+  bootstrap: 5
+  light-switch: true

@@ -4,13 +4,15 @@
 \name{cbr_requests}
 \alias{cbr_requests}
 \title{The data.frame of supported securities requests}
-\format{data.frame with 37 rows and 4 variables
+\format{
+data.frame with 37 rows and 4 variables
 \describe{
   \item{name}{security name}
   \item{node}{short-cut for parsing XML tree}
   \item{type}{type of request structure}
   \item{status}{indicator whether the request is checked}
-}}
+}
+}
 \source{
 manual check
 }
@@ -22,4 +24,3 @@ A data.frame containing the list of securities requests
 for Central Bank of Russia supported by this package.
 }
 \keyword{datasets}
-

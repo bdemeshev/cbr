@@ -15,11 +15,7 @@ list with omitted last element
 \description{
 Drops last entry in the list x if this entry is character
 }
-\details{
-Drops last entry in the list x if this entry is character
-}
 \examples{
-a <- list(x = 5, y = 'last')
+a <- list(x = 5, y = "last")
 cbr:::droplast(a)
 }
-

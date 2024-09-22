@@ -21,6 +21,5 @@ Historical metal prices from Central Bank of Russia.
 Historical metal prices from Central Bank of Russia.
 }
 \examples{
-df <- cbr_metal(from = '2012-01-01', to = '2013-01-09')
+df <- cbr_metal(from = "2012-01-01", to = "2013-01-09")
 }
-

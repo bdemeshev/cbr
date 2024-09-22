@@ -17,10 +17,6 @@ data.frame with credit institutions balance from cbr.ru
 \description{
 Credit institutions balances on correspondent accounts with Bank of Russia.
 }
-\details{
-Credit institutions balances on correspondent accounts with Bank of Russia.
-}
 \examples{
-df <- cbr_balances(from = '2012-01-01', to = '2013-01-09')
+df <- cbr_balances(from = "2012-01-01", to = "2013-01-09")
 }
-

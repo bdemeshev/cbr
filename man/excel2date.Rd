@@ -13,13 +13,9 @@ excel2date(x)
 the date
 }
 \description{
-Convert excel numeric date encoding to date
-}
-\details{
 While reading excel files dates are sometimes replaced by their numeric codes.
 This function recovers original dates from these codes.
 }
 \examples{
 excel2date(12345)
 }
-

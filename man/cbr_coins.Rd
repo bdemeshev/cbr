@@ -17,10 +17,6 @@ data.frame with historical release prices for investment coins from cbr.ru
 \description{
 Release Prices of the Bank of Russia for Investment Coins.
 }
-\details{
-Release Prices of the Bank of Russia for Investment Coins.
-}
 \examples{
-df <- cbr_coins(from = '2012-01-01', to = '2013-01-09')
+df <- cbr_coins(from = "2012-01-01", to = "2013-01-09")
 }
-

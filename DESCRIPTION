@@ -1,9 +1,14 @@
 Package: cbr
 Type: Package
 Title: Download data from cbr.ru, Central Bank of Russia
-Version: 0.3.0
+Version: 0.3.1
 Date: 2024-09-12
-Author: Marcel Salikhov, Boris Demeshev, Artem Simakin, Ivan Z <i2z1@ddslab.ru>
+Authors@R: c(
+    person("Boris", "Demeshev", email = "boris.demeshev@gmail.com", role = c("aut", "cre")),
+    person("Marcel", "Salikhov", role = "aut"),
+    person("Artem", "Simakin", role = "aut"),
+    person("Ivan", "Z", email = "i2z1@ddslab.ru", role = c("aut"))
+  ) 
 Maintainer: Boris Demeshev <boris.demeshev@gmail.com>
 Description: Functions for downloading data from cbr.ru.
 Depends:
@@ -19,6 +24,7 @@ Suggests:
     testthat (>= 3.0.0)
 License: GPL-2
 LazyData: no
-RoxygenNote: 5.0.1
+RoxygenNote: 7.3.2
 VignetteBuilder: knitr
 Config/testthat/edition: 3
+Encoding: UTF-8

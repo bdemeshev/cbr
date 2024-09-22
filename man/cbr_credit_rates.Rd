@@ -21,6 +21,5 @@ Historical credit rates on Interbank Credit Market.
 Historical credit rates on Interbank Credit Market.
 }
 \examples{
-df <- cbr_credit_rates(from = '2012-01-01', to = '2013-01-09')
+df <- cbr_credit_rates(from = "2012-01-01", to = "2013-01-09")
 }
-

@@ -15,10 +15,6 @@ data.frame
 \description{
 Convert list from xml to data.frame with little changes
 }
-\details{
-Convert list from xml to data.frame with little changes
-}
 \examples{
-extractXML('http://www.cbr.ru/scripts/xml_swap.asp?date_req1=01/12/2002&date_req2=06/12/2002')
+extractXML("https://cbr.ru/scripts/xml_swap.asp?date_req1=01/12/2002&date_req2=06/12/2002")
 }
-
